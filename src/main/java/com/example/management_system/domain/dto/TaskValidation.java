@@ -1,7 +1,5 @@
 package com.example.management_system.domain.dto;
 
-import java.util.List;
-
 public class TaskValidation {
 
     public String title;

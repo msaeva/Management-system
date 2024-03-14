@@ -3,13 +3,14 @@ package com.example.management_system.domain.dto;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
 import java.util.Set;
 
 @Getter
 @Setter
 public class TeamValidation {
     private String name;
-    private Set<Integer> userIds;
+    private List<Long> userIds;
     private Long projectId;
 
     public Long getProjectId() {
@@ -29,11 +30,11 @@ public class TeamValidation {
         this.name = name;
     }
 
-    public Set<Integer> getUserIds() {
+    public List<Long> getUserIds() {
         return userIds;
     }
 
-    public void setUserIds(Set<Integer> userIds) {
+    public void setUserIds(List<Long> userIds) {
         this.userIds = userIds;
     }
 }

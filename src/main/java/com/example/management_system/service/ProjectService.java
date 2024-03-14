@@ -1,5 +1,6 @@
 package com.example.management_system.service;
 
+import com.example.management_system.controller.errors.ProjectNotFoundException;
 import com.example.management_system.domain.dto.ProjectValidation;
 import com.example.management_system.domain.entity.Project;
 import com.example.management_system.domain.enums.ProjectStatus;
@@ -25,6 +26,8 @@ public class ProjectService {
     }
 
     public Project findById(Long id) {
-        return projectRepository.findById(id).orElseThrow();
+        return projectRepository
+                .findById(id)
+                .orElseThrow(() -> new ProjectNotFoundException("Project with id : " + id + " not founf!"));
     }
 }

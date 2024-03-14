@@ -1,18 +1,15 @@
 package com.example.management_system.service;
 
+import com.example.management_system.controller.errors.InvalidUserException;
 import com.example.management_system.domain.dto.TaskDTO;
 import com.example.management_system.domain.dto.TaskValidation;
 import com.example.management_system.domain.entity.Project;
 import com.example.management_system.domain.entity.Task;
-import com.example.management_system.domain.entity.Team;
 import com.example.management_system.domain.entity.User;
 import com.example.management_system.repository.TaskRepository;
 import com.example.management_system.service.mapper.TaskMapper;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
-
-import java.util.List;
-import java.util.Set;
 
 @Stateless
 public class TaskService {
@@ -34,20 +31,22 @@ public class TaskService {
 
         Project project = projectService.findById(validation.getProjectId());
 
-        Set<Team> teams = project.getTeams();
+        if (validation.getUserId() != null) {
+            User userToAdd = userService.findById(validation.getUserId());
 
-        User userToAdd = userService.findById(validation.getUserId());
+            if (project.getTeams().stream().anyMatch(team -> team.getUsers().contains(userToAdd))) {
+                task.setUser(userToAdd);
+            } else {
+                throw new InvalidUserException("User is not in any team of the project.");
+            }
 
-        boolean isUserInTeam = teams.stream().anyMatch(t -> t.getId() == userToAdd.getId());
-
-        if (!isUserInTeam) {
-            // TODO throw custom exception
+        } else {
+            task.setUser(null);
         }
 
         task.setProject(project);
-        task.setUser(userToAdd);
-        Task saved = taskRepository.save(task);
+        Task savedTask = taskRepository.save(task);
 
-        return taskMapper.toDTO(saved);
+        return taskMapper.toDTO(savedTask);
     }
 }

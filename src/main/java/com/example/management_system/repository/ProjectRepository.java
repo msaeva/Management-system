@@ -28,6 +28,6 @@ public class ProjectRepository {
 
     public Optional<Project> findById(Long id) {
         Project project = entityManager.find(Project.class, id);
-        return Optional.of(project);
+        return Optional.ofNullable(project);
     }
 }

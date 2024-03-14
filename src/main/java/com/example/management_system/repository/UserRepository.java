@@ -28,7 +28,7 @@ public class UserRepository {
         return user;
     }
 
-    public List<User> findByIds(List<Long> userIds) {
+    public List<User> findAllByIds(List<Long> userIds) {
         if (userIds == null || userIds.isEmpty()) {
             return List.of();
         }

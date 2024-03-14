@@ -1,5 +1,6 @@
 package com.example.management_system.service;
 
+import com.example.management_system.controller.errors.UserNotFoundException;
 import com.example.management_system.domain.dto.RegisterUserValidation;
 import com.example.management_system.domain.entity.User;
 import com.example.management_system.repository.UserRepository;
@@ -42,12 +43,12 @@ public class UserService {
     }
 
 
-    public Set<User> findByIds(List<Long> userIds) {
-        return new HashSet<>(userRepository.findByIds(userIds));
+    public Set<User> findAllByIds(List<Long> userIds) {
+        return new HashSet<>(userRepository.findAllByIds(userIds));
     }
 
     public User findById(Long id) {
-        return userRepository.findById(id).orElseThrow();
+        return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User with id : " + id + " not found!"));
     }
 
     public Optional<User> findByUsername(String username) {
@@ -62,4 +63,5 @@ public class UserService {
     public boolean checkPassword(String password, String hashed) {
         return BCrypt.checkpw(password, hashed);
     }
+
 }
