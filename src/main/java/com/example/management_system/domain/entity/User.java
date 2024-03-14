@@ -18,6 +18,9 @@ public class User implements Serializable {
     @SequenceGenerator(name = "SEQ_PRIMARY_USER_ID", sequenceName = "SEQ_PRIMARY_USER_ID", allocationSize = 1)
     private Long id;
 
+    @Column(name = "USERNAME")
+    private String username;
+
     @Column(name = "FIRSTNAME")
     private String firstName;
 
@@ -33,6 +36,14 @@ public class User implements Serializable {
     @ManyToOne
     @JoinColumn(name = "ROLE_ID", referencedColumnName = "ID")
     private UserRole role;
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
     public Long getId() {
         return id;

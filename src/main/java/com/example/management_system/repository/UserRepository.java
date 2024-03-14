@@ -8,28 +8,29 @@ import jakarta.persistence.TypedQuery;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
-//@TransactionAttribute(TransactionAttributeType.REQUIRED)
 @Stateless
 public class UserRepository {
-
 
     @PersistenceContext
     private EntityManager entityManager;
 
 
-    public void save(User user) {
+    public User save(User user) {
         try {
             entityManager.persist(user);
+            entityManager.flush();
+            entityManager.refresh(user);
+            return user;
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return user;
     }
 
     public List<User> findByIds(List<Long> userIds) {
         if (userIds == null || userIds.isEmpty()) {
-            return List.of(); // Return an empty list if the input list is null or empty
+            return List.of();
         }
 
         String jpql = "SELECT u FROM User u WHERE u.id IN :userIds";
@@ -42,5 +43,17 @@ public class UserRepository {
     public Optional<User> findById(Long id) {
         User user = entityManager.find(User.class, id);
         return Optional.of(user);
+    }
+
+    public Optional<User> findByUsername(String username) {
+        TypedQuery<User> query = entityManager.createQuery(
+                "SELECT u FROM User u WHERE u.username = :username", User.class);
+        query.setParameter("username", username);
+        List<User> resultList = query.getResultList();
+        if (!resultList.isEmpty()) {
+            return Optional.of(resultList.get(0));
+        } else {
+            return Optional.empty();
+        }
     }
 }

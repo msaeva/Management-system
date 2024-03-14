@@ -7,6 +7,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
 
+import java.util.List;
 import java.util.Optional;
 
 @Stateless
@@ -24,5 +25,17 @@ public class UserRoleRepository {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    public List<UserRole> findRoleByUserUsername(String username) {
+        String query = "SELECT u.role " +
+                "FROM User AS u " +
+                "WHERE u.username = :username";
+
+        TypedQuery<UserRole> typedQuery = entityManager.createQuery(query, UserRole.class);
+        typedQuery.setParameter("username", username);
+
+        return typedQuery.getResultList();
+
     }
 }

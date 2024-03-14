@@ -3,6 +3,7 @@ package com.example.management_system.controller;
 import com.example.management_system.domain.dto.ProjectValidation;
 import com.example.management_system.domain.entity.Project;
 import com.example.management_system.service.ProjectService;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -14,6 +15,7 @@ public class ProjectController {
     @Inject
     private ProjectService projectService;
 
+    @RolesAllowed("ADMIN")
     @Produces("application/json")
     @POST()
     public Response create(ProjectValidation validation) {

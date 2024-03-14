@@ -12,8 +12,17 @@ public class RegisterUserValidation {
     private String firstName;
     private String lastName;
     private String email;
+    private String username;
     private String password;
     private String role;
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
     public String getFirstName() {
         return firstName;
