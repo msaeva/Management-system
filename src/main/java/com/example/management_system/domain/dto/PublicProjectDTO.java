@@ -5,7 +5,5 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class ProjectValidation {
-    public String title;
-    public String description;
+public class PublicProjectDTO {
 }

@@ -5,6 +5,7 @@ import com.example.management_system.domain.entity.Project;
 import com.example.management_system.service.ProjectService;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
@@ -21,5 +22,12 @@ public class ProjectController {
     public Response create(ProjectValidation validation) {
         Project project = projectService.create(validation);
         return Response.ok(project).build();
+    }
+
+    @Produces("application/json")
+    @GET()
+    @Path("/user")
+    public Response get() {
+        return Response.ok(projectService.getUserProjects()).build();
     }
 }

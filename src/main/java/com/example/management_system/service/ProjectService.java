@@ -3,13 +3,13 @@ package com.example.management_system.service;
 import com.example.management_system.controller.errors.ProjectNotFoundException;
 import com.example.management_system.domain.dto.ProjectValidation;
 import com.example.management_system.domain.entity.Project;
-import com.example.management_system.domain.enums.ProjectStatus;
+import com.example.management_system.domain.entity.User;
 import com.example.management_system.repository.ProjectRepository;
 import com.example.management_system.service.mapper.ProjectMapper;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
 
-import java.time.LocalDateTime;
+import java.util.List;
 
 @Stateless
 public class ProjectService {
@@ -17,6 +17,8 @@ public class ProjectService {
     @Inject
     public ProjectRepository projectRepository;
 
+    @Inject
+    public AuthService authService;
     @Inject
     public ProjectMapper projectMapper;
 
@@ -29,5 +31,13 @@ public class ProjectService {
         return projectRepository
                 .findById(id)
                 .orElseThrow(() -> new ProjectNotFoundException("Project with id : " + id + " not founf!"));
+    }
+
+    public List<Project> getUserProjects() {
+        User authUser = authService.getAuthenticatedUser();
+        if (authUser == null) {
+            // TODO throw exception
+        }
+        return projectRepository.getProjectsByUserId(authUser.getId());
     }
 }
