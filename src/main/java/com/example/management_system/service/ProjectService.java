@@ -2,6 +2,7 @@ package com.example.management_system.service;
 
 import com.example.management_system.controller.errors.ProjectNotFoundException;
 import com.example.management_system.domain.dto.ProjectValidation;
+import com.example.management_system.domain.dto.TaskDTO;
 import com.example.management_system.domain.entity.Project;
 import com.example.management_system.domain.entity.User;
 import com.example.management_system.repository.ProjectRepository;
@@ -16,11 +17,13 @@ public class ProjectService {
 
     @Inject
     public ProjectRepository projectRepository;
-
     @Inject
     public AuthService authService;
     @Inject
     public ProjectMapper projectMapper;
+
+    @Inject
+    public TaskService taskService;
 
     public Project create(ProjectValidation validation) {
         Project project = projectMapper.toProject(validation);
@@ -39,5 +42,9 @@ public class ProjectService {
             // TODO throw exception
         }
         return projectRepository.getProjectsByUserId(authUser.getId());
+    }
+
+    public List<TaskDTO> getProjectTasks(long projectId) {
+        return taskService.getTasksByProjectId(projectId);
     }
 }

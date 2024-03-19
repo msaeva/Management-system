@@ -5,7 +5,10 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
-@Getter @Setter
+import java.time.LocalDateTime;
+
+@Getter
+@Setter
 @RequiredArgsConstructor
 @Entity
 @Table(name = "TASKS")
@@ -25,6 +28,9 @@ public class Task {
 
     @Column(name = "STATUS")
     private String status;
+
+    @Column(name = "CREATED_DATE")
+    private LocalDateTime createdDate;
 
     @ManyToOne
     @JoinColumn(name = "USER_ID", referencedColumnName = "ID")
