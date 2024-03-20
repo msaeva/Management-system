@@ -1,8 +1,10 @@
 package com.example.management_system.service;
 
 import com.example.management_system.controller.errors.UserNotFoundException;
-import com.example.management_system.domain.dto.RegisterUserValidation;
+import com.example.management_system.domain.dto.user.RegisterUserValidation;
+import com.example.management_system.domain.dto.user.SimpleUserDTO;
 import com.example.management_system.domain.entity.User;
+import com.example.management_system.domain.entity.UserRole;
 import com.example.management_system.repository.UserRepository;
 import com.example.management_system.service.mapper.UserMapper;
 import jakarta.ejb.Stateless;
@@ -27,21 +29,23 @@ public class UserService {
     @Inject
     private UserRoleService userRoleService;
 
-
     private static final Logger LOGGER = Logger.getLogger(UserService.class.getName());
 
     @Transactional
     public User create(RegisterUserValidation validation) {
 
-
         // TODO check by username and email
         String encodedPassword = encodePassword(validation.getPassword());
+        UserRole role = userRoleService.findByName(validation.getRole());
+        User user = new User(validation.getUsername(),
+                validation.getFirstName(),
+                validation.getLastName(),
+                validation.getEmail(),
+                encodedPassword,
+                role);
 
-        User user = userMapper.toUser(validation);
-        user.setPassword(encodedPassword);
         return userRepository.save(user);
     }
-
 
     public Set<User> findAllByIds(List<Long> userIds) {
         return new HashSet<>(userRepository.findAllByIds(userIds));
@@ -64,4 +68,10 @@ public class UserService {
         return BCrypt.checkpw(password, hashed);
     }
 
+    public SimpleUserDTO mapToSimpleUserDTO(User user) {
+        return new SimpleUserDTO(user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getRole().getRole().name());
+    }
 }

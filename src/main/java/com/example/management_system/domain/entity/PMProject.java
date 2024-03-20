@@ -7,8 +7,8 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 @Entity
-@Table(name = "ADMIN_PROJECTS")
-public class AdminProject {
+@Table(name = "PM_PROJECTS")
+public class PMProject {
 
     @Id
     @ManyToOne

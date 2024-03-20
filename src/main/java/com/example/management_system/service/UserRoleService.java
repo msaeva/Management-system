@@ -16,6 +16,7 @@ public class UserRoleService {
     private UserRoleRepository userRoleRepository;
 
     public UserRole findByName(String name) {
+        // TODO throw custom exception
         return userRoleRepository.findByName(name).orElse(null);
     }
 

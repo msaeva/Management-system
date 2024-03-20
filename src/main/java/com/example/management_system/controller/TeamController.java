@@ -1,6 +1,6 @@
 package com.example.management_system.controller;
 
-import com.example.management_system.domain.dto.TeamValidation;
+import com.example.management_system.domain.dto.team.TeamValidation;
 import com.example.management_system.domain.entity.Team;
 import com.example.management_system.service.TeamService;
 import jakarta.annotation.security.RolesAllowed;
