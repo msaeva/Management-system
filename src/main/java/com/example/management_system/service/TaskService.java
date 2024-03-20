@@ -7,6 +7,7 @@ import com.example.management_system.domain.dto.TaskValidation;
 import com.example.management_system.domain.entity.Project;
 import com.example.management_system.domain.entity.Task;
 import com.example.management_system.domain.entity.User;
+import com.example.management_system.domain.enums.TaskStatus;
 import com.example.management_system.repository.TaskRepository;
 import com.example.management_system.service.mapper.TaskMapper;
 import jakarta.ejb.Stateless;
@@ -35,9 +36,12 @@ public class TaskService {
     public AuthService authService;
 
     public TaskDTO create(TaskValidation validation) {
-        Task task = taskMapper.toTask(validation);
-
         Project project = projectService.findById(validation.getProjectId());
+        Task task = new Task(validation.getTitle(),
+                validation.getDescription(),
+                TaskStatus.TODO.name(),
+                LocalDateTime.now(),
+                project);
 
         if (validation.getUserId() != null) {
             User userToAdd = userService.findById(validation.getUserId());
@@ -47,39 +51,49 @@ public class TaskService {
             } else {
                 throw new InvalidUserException("User is not in any team of the project.");
             }
-
         } else {
             task.setUser(null);
         }
 
-        task.setProject(project);
-        task.setCreatedDate(LocalDateTime.now());
         Task savedTask = taskRepository.save(task);
-
-        return taskMapper.toDTO(savedTask);
+        return toDTO(savedTask);
     }
 
     public List<TaskDTO> getTasksByProjectId(long projectId) {
         User authUser = authService.getAuthenticatedUser();
         if (authUser == null) {
-            // TODO
+            throw new InvalidUserException("User is not authenticated");
         }
         return taskRepository
                 .getTasksByUserAndProject(authUser.getId(), projectId)
                 .stream()
-                .map(t -> taskMapper.toDTO(t))
+                .map(this::toDTO)
                 .collect(Collectors.toList());
     }
 
-    public String updateStatus(long taskId, String status) {
-        Optional<Task> optionalTask = taskRepository.findById(taskId);
+    private TaskDTO toDTO(Task task) {
+        return new TaskDTO(task.getTitle(),
+                task.getDescription(),
+                task.getStatus(),
+                task.getProject().getId(),
+                task.getUser().getId());
+    }
+
+    public String updateStatus(long id, String status) {
+        Optional<Task> optionalTask = taskRepository.findById(id);
         if (optionalTask.isPresent()) {
             Task task = optionalTask.get();
-            task.setStatus(status);
+            task.setStatus(TaskStatus.valueOf(status).name());
             taskRepository.save(task);
             return task.getStatus();
         } else {
-            throw new TaskNotFoundException("Task with id: " + taskId + " not found!");
+            throw new TaskNotFoundException("Task with id: " + id + " not found!");
         }
+    }
+
+    public Task findById(Long id) {
+        return taskRepository
+                .findById(id)
+                .orElseThrow(() -> new TaskNotFoundException("Task with id: " + id + " not found!"));
     }
 }

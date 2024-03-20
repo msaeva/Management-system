@@ -39,4 +39,12 @@ public class Task {
     @ManyToOne
     @JoinColumn(name = "PROJECT_ID", referencedColumnName = "ID")
     private Project project;
+
+    public Task(String title, String description, String status, LocalDateTime createdDate, Project project) {
+        this.title = title;
+        this.description = description;
+        this.status = status;
+        this.createdDate = createdDate;
+        this.project = project;
+    }
 }

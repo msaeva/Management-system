@@ -1,6 +1,6 @@
 package com.example.management_system.service.mapper;
 
-import com.example.management_system.domain.dto.ProjectValidation;
+import com.example.management_system.domain.dto.project.ProjectValidation;
 import com.example.management_system.domain.entity.Project;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

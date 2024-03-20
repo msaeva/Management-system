@@ -1,4 +1,4 @@
-package com.example.management_system.domain.dto;
+package com.example.management_system.domain.dto.user;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -8,7 +8,6 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class RegisterUserValidation {
-
     private String firstName;
     private String lastName;
     private String email;

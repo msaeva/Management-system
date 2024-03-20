@@ -1,8 +1,8 @@
 package com.example.management_system.controller;
 
 import com.example.management_system.config.security.AuthenticationStoreImpl;
-import com.example.management_system.domain.dto.LoginUserValidation;
-import com.example.management_system.domain.dto.RegisterUserValidation;
+import com.example.management_system.domain.dto.user.LoginUserValidation;
+import com.example.management_system.domain.dto.user.RegisterUserValidation;
 import com.example.management_system.domain.entity.User;
 import com.example.management_system.service.AuthService;
 import com.example.management_system.service.UserService;

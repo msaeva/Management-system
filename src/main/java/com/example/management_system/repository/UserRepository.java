@@ -41,8 +41,11 @@ public class UserRepository {
     }
 
     public Optional<User> findById(Long id) {
+        if (id == null) {
+            return Optional.empty();
+        }
         User user = entityManager.find(User.class, id);
-        return Optional.of(user);
+        return Optional.ofNullable(user);
     }
 
     public Optional<User> findByUsername(String username) {

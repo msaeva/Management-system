@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -42,4 +41,23 @@ public class Project {
             inverseJoinColumns = @JoinColumn(name = "TEAM_ID")
     )
     private Set<Team> teams = new HashSet<>();
+
+    @ManyToMany
+    @JoinTable(
+            name = "PM_PROJECTS",
+            joinColumns = @JoinColumn(name = "PROJECT_ID"),
+            inverseJoinColumns = @JoinColumn(name = "USER_ID")
+    )
+    private Set<User> pms = new HashSet<>();
+
+    public Project(String title,
+                   String description,
+                   ProjectStatus status,
+                   LocalDateTime createdDate) {
+        this.title = title;
+        this.description = description;
+        this.status = status;
+        this.createdDate = createdDate;
+    }
+
 }
