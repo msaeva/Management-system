@@ -8,4 +8,6 @@ import lombok.Setter;
 public class ProjectValidation {
     private String title;
     private String description;
+    private String abbreviation;
+    private Long pmId;
 }

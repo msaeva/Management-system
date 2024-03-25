@@ -3,6 +3,7 @@ package com.example.management_system.repository;
 import com.example.management_system.domain.entity.User;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
 
@@ -49,14 +50,39 @@ public class UserRepository {
     }
 
     public Optional<User> findByUsername(String username) {
-        TypedQuery<User> query = entityManager.createQuery(
-                "SELECT u FROM User u WHERE u.username = :username", User.class);
-        query.setParameter("username", username);
-        List<User> resultList = query.getResultList();
-        if (!resultList.isEmpty()) {
-            return Optional.of(resultList.get(0));
-        } else {
+        try {
+            TypedQuery<User> query = entityManager.createQuery(
+                    "SELECT u FROM User u WHERE u.username = :username", User.class);
+            query.setParameter("username", username);
+            User user = query.getSingleResult();
+            return Optional.of(user);
+        } catch (NoResultException e) {
             return Optional.empty();
         }
+    }
+
+    public Optional<User> findByEmail(String email) {
+        try {
+            TypedQuery<User> query = entityManager.createQuery(
+                    "SELECT u FROM User u WHERE u.email = :email", User.class);
+            query.setParameter("email", email);
+            User user = query.getSingleResult();
+            return Optional.of(user);
+        } catch (NoResultException e) {
+            return Optional.empty();
+        }
+    }
+
+    public List<User> findAll() {
+        return entityManager.createQuery("SELECT u FROM User u", User.class)
+                .getResultList();
+    }
+
+    public boolean deleteById(Long id) {
+        String jpql = "DELETE FROM User u WHERE u.id = :id";
+        int deletedCount = entityManager.createQuery(jpql)
+                .setParameter("id", id)
+                .executeUpdate();
+        return deletedCount > 0;
     }
 }

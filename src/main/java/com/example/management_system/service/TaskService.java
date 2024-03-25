@@ -1,5 +1,6 @@
 package com.example.management_system.service;
 
+import com.example.management_system.controller.errors.InvalidTaskException;
 import com.example.management_system.controller.errors.InvalidUserException;
 import com.example.management_system.controller.errors.TaskNotFoundException;
 import com.example.management_system.domain.dto.TaskDTO;
@@ -9,7 +10,6 @@ import com.example.management_system.domain.entity.Task;
 import com.example.management_system.domain.entity.User;
 import com.example.management_system.domain.enums.TaskStatus;
 import com.example.management_system.repository.TaskRepository;
-import com.example.management_system.service.mapper.TaskMapper;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
 
@@ -20,15 +20,11 @@ import java.util.stream.Collectors;
 
 @Stateless
 public class TaskService {
-
     @Inject
     public TaskRepository taskRepository;
 
     @Inject
     public UserService userService;
-
-    @Inject
-    public TaskMapper taskMapper;
 
     @Inject
     public ProjectService projectService;
@@ -41,13 +37,16 @@ public class TaskService {
                 validation.getDescription(),
                 TaskStatus.TODO.name(),
                 LocalDateTime.now(),
-                project);
+                project,
+                project.getAbbreviation() + "-" + validation.getNumber(),
+                validation.getNumber());
 
         if (validation.getUserId() != null) {
             User userToAdd = userService.findById(validation.getUserId());
 
             if (project.getTeams().stream().anyMatch(team -> team.getUsers().contains(userToAdd))) {
                 task.setUser(userToAdd);
+                task.setStatus(TaskStatus.OPEN.name());
             } else {
                 throw new InvalidUserException("User is not in any team of the project.");
             }
@@ -72,11 +71,14 @@ public class TaskService {
     }
 
     private TaskDTO toDTO(Task task) {
-        return new TaskDTO(task.getTitle(),
+        return new TaskDTO(
+                task.getId(),
+                task.getTitle(),
                 task.getDescription(),
                 task.getStatus(),
                 task.getProject().getId(),
-                task.getUser().getId());
+                task.getUser().getId(),
+                task.getAbbreviation());
     }
 
     public String updateStatus(long id, String status) {
@@ -91,9 +93,26 @@ public class TaskService {
         }
     }
 
+    public TaskDTO getById(Long id) {
+        Task task = findById(id);
+        return this.toDTO(task);
+    }
+
     public Task findById(Long id) {
         return taskRepository
                 .findById(id)
                 .orElseThrow(() -> new TaskNotFoundException("Task with id: " + id + " not found!"));
+    }
+
+    public void assignUserToTask(long id, long userId) {
+        User user = userService.findById(userId);
+        Task task = findById(id);
+
+        if (task.getUser() != null) {
+            throw new InvalidTaskException("Task with id: " + id + " already has assigned user");
+        }
+
+        task.setUser(user);
+        taskRepository.save(task);
     }
 }

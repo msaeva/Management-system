@@ -28,7 +28,7 @@ public class TeamService {
 
     private static final Logger LOGGER = Logger.getLogger(UserController.class.getName());
 
-    public Team create(TeamValidation validation) {
+    public DetailedTeamDTO create(TeamValidation validation) {
         Team team = new Team();
         team.setName(validation.getName());
         Project project = projectService.findById(validation.getProjectId());
@@ -40,7 +40,9 @@ public class TeamService {
             Set<User> usersToAdd = userService.findAllByIds(validation.getUserIds());
             team.getUsers().addAll(usersToAdd);
         }
-        return teamRepository.save(team);
+        Team saved = teamRepository.save(team);
+        return mapToDetailedTeamDTO(saved);
+
     }
 
     public DetailedTeamDTO mapToDetailedTeamDTO(Team team) {

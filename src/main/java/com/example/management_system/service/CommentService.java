@@ -22,8 +22,6 @@ public class CommentService {
     @Inject
     private AuthService authService;
     @Inject
-    private CommentMapper commentMapper;
-    @Inject
     private CommentRepository commentRepository;
 
     public CommentDTO create(CommentValidation validation) {

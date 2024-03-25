@@ -2,7 +2,7 @@ package com.example.management_system.config.security;
 
 import com.example.management_system.controller.UserController;
 import io.jsonwebtoken.ExpiredJwtException;
-import jakarta.enterprise.context.RequestScoped;
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.security.enterprise.AuthenticationStatus;
 import jakarta.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism;
@@ -15,7 +15,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.util.logging.Logger;
 
-@RequestScoped
+@ApplicationScoped
 public class JWTAuthenticationMechanism implements HttpAuthenticationMechanism {
     private static final String AUTHORIZATION_HEADER = "Authorization";
     @Inject
@@ -30,6 +30,10 @@ public class JWTAuthenticationMechanism implements HttpAuthenticationMechanism {
         String username = request.getParameter("username");
         String password = request.getParameter("password");
         String token = extractToken(context);
+
+        if (request.getMethod().equals("OPTIONS")) {
+            return context.doNothing();
+        }
 
         if (username != null && password != null) {
             CredentialValidationResult result = identityStoreHandler.validate(new UsernamePasswordCredential(username, password));
@@ -49,21 +53,25 @@ public class JWTAuthenticationMechanism implements HttpAuthenticationMechanism {
     }
 
     private AuthenticationStatus validateToken(String token, HttpMessageContext context) {
-
-        LOGGER.info("token " + token);
         try {
             if (jwtUtil.validateToken(token)) {
                 UserPrincipal userPrincipal = jwtUtil.getUserDetails(token);
-                LOGGER.info("info " + userPrincipal.getPrincipal());
-                LOGGER.info("info " + userPrincipal.getAuthorities());
                 return context.notifyContainerAboutLogin(userPrincipal.getPrincipal(), userPrincipal.getAuthorities());
             }
-            LOGGER.info("inside if ");
+            addCorsHeaders(context.getResponse());
             return context.responseUnauthorized();
         } catch (ExpiredJwtException e) {
             LOGGER.info("in catch block ");
             return context.responseUnauthorized();
         }
+    }
+
+    private void addCorsHeaders(HttpServletResponse response) {
+        response.addHeader("Access-Control-Allow-Origin", "*");
+        response.addHeader("Access-Control-Allow-Headers", "origin, content-type, accept, authorization");
+        response.addHeader("Access-Control-Allow-Headers", "origin, content-type, accept, authorization");
+        response.addHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD");
+
     }
 
     private AuthenticationStatus createToken(CredentialValidationResult result, HttpMessageContext context) {
@@ -75,8 +83,7 @@ public class JWTAuthenticationMechanism implements HttpAuthenticationMechanism {
     private String extractToken(HttpMessageContext context) {
         String authorizationHeader = context.getRequest().getHeader(AUTHORIZATION_HEADER);
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            String token = authorizationHeader.substring("Bearer".length(), authorizationHeader.length());
-            return token;
+            return authorizationHeader.substring("Bearer".length(), authorizationHeader.length());
         }
         return null;
     }

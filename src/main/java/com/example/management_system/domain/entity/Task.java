@@ -32,6 +32,12 @@ public class Task {
     @Column(name = "CREATED_DATE")
     private LocalDateTime createdDate;
 
+    @Column(name = "NUMBER")
+    private String number;
+
+    @Column(name = "ABBREVIATION")
+    private String abbreviation;
+
     @ManyToOne
     @JoinColumn(name = "USER_ID", referencedColumnName = "ID")
     private User user;
@@ -40,11 +46,19 @@ public class Task {
     @JoinColumn(name = "PROJECT_ID", referencedColumnName = "ID")
     private Project project;
 
-    public Task(String title, String description, String status, LocalDateTime createdDate, Project project) {
+    public Task(String title,
+                String description,
+                String status,
+                LocalDateTime createdDate,
+                Project project,
+                String abbreviation,
+                String number) {
         this.title = title;
         this.description = description;
         this.status = status;
         this.createdDate = createdDate;
         this.project = project;
+        this.abbreviation = abbreviation;
+        this.number = number;
     }
 }

@@ -1,9 +1,6 @@
 package com.example.management_system.repository;
 
-import com.example.management_system.domain.dto.TaskDTO;
-import com.example.management_system.domain.entity.Project;
 import com.example.management_system.domain.entity.Task;
-import com.example.management_system.domain.entity.User;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -40,6 +37,6 @@ public class TaskRepository {
 
     public Optional<Task> findById(long id) {
         Task task = entityManager.find(Task.class, id);
-        return Optional.of(task);
+        return Optional.ofNullable(task);
     }
 }

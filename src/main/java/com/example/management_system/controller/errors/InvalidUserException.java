@@ -1,6 +1,9 @@
 package com.example.management_system.controller.errors;
 
-public class InvalidUserException extends RuntimeException {
+import jakarta.ejb.ApplicationException;
+import jakarta.ws.rs.WebApplicationException;
+@ApplicationException
+public class InvalidUserException extends WebApplicationException {
     public InvalidUserException(String message) {
         super(message);
     }
