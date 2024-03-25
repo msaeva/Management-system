@@ -1,15 +1,13 @@
 package com.example.management_system.domain.dto.user;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-@AllArgsConstructor
-public class SimpleUserDTO {
+public class UpdateUserValidation {
     private Long id;
-    private String username;
-    private String email;
+    private String firstName;
+    private String lastName;
     private String role;
 }

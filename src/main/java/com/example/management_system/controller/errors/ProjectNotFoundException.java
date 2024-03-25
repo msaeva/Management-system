@@ -1,6 +1,9 @@
 package com.example.management_system.controller.errors;
 
-public class ProjectNotFoundException extends RuntimeException{
+import jakarta.ejb.ApplicationException;
+import jakarta.ws.rs.WebApplicationException;
+@ApplicationException
+public class ProjectNotFoundException extends WebApplicationException {
     public ProjectNotFoundException(String message) {
         super(message);
     }

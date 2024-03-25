@@ -1,7 +1,7 @@
 package com.example.management_system.controller;
 
+import com.example.management_system.domain.dto.team.DetailedTeamDTO;
 import com.example.management_system.domain.dto.team.TeamValidation;
-import com.example.management_system.domain.entity.Team;
 import com.example.management_system.service.TeamService;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
@@ -21,7 +21,7 @@ public class TeamController {
     @POST()
     @RolesAllowed({"ADMIN", "PM"})
     public Response create(TeamValidation validation) {
-        Team team = teamService.create(validation);
+        DetailedTeamDTO team = teamService.create(validation);
         return Response.ok(team).build();
     }
 }

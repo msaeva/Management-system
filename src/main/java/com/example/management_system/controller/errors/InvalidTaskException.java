@@ -4,8 +4,8 @@ import jakarta.ejb.ApplicationException;
 import jakarta.ws.rs.WebApplicationException;
 
 @ApplicationException
-public class TaskNotFoundException extends WebApplicationException {
-    public TaskNotFoundException(String message) {
+public class InvalidTaskException extends WebApplicationException {
+    public InvalidTaskException(String message) {
         super(message);
     }
 }

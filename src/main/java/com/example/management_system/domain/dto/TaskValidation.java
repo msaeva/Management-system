@@ -6,8 +6,9 @@ import lombok.Setter;
 @Getter
 @Setter
 public class TaskValidation {
-    public String title;
-    public String description;
-    public Long projectId;
-    public Long userId;
+    private String title;
+    private String description;
+    private Long projectId;
+    private Long userId;
+    private String number;
 }

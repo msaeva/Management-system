@@ -34,6 +34,9 @@ public class Project {
     @Column(name = "CREATED_DATE")
     private LocalDateTime createdDate;
 
+    @Column(name = "ABBREVIATION")
+    private String abbreviation;
+
     @ManyToMany
     @JoinTable(
             name = "PROJECTS_TEAMS",
@@ -53,11 +56,14 @@ public class Project {
     public Project(String title,
                    String description,
                    ProjectStatus status,
-                   LocalDateTime createdDate) {
+                   LocalDateTime createdDate,
+                   String abbreviation,
+                   Set<User> pms) {
         this.title = title;
         this.description = description;
         this.status = status;
         this.createdDate = createdDate;
+        this.abbreviation = abbreviation;
+        this.pms = pms;
     }
-
 }

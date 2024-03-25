@@ -3,7 +3,7 @@ package com.example.management_system.controller;
 import com.example.management_system.config.security.AuthenticationStoreImpl;
 import com.example.management_system.domain.dto.user.LoginUserValidation;
 import com.example.management_system.domain.dto.user.RegisterUserValidation;
-import com.example.management_system.domain.entity.User;
+import com.example.management_system.domain.dto.user.SimpleUserDTO;
 import com.example.management_system.service.AuthService;
 import com.example.management_system.service.UserService;
 import jakarta.inject.Inject;
@@ -34,7 +34,7 @@ public class AccountController {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response register(RegisterUserValidation validation) {
-        User createdUser = userService.create(validation);
+        SimpleUserDTO createdUser = userService.create(validation);
         return Response.status(Response.Status.CREATED)
                 .entity(createdUser)
                 .build();
