@@ -33,7 +33,10 @@ public class ProjectRepository {
 
     public Optional<Project> findById(Long id) {
         Project project = entityManager.find(Project.class, id);
-        return Optional.ofNullable(project);
+        if (project == null){
+            return Optional.empty();
+        }
+        return Optional.of(project);
     }
 
     public List<Project> getProjectsByUserId(Long id) {
@@ -49,5 +52,19 @@ public class ProjectRepository {
         criteriaQuery.where(criteriaBuilder.equal(usersJoin.get("id"), id));
 
         return entityManager.createQuery(criteriaQuery).getResultList();
+    }
+
+
+    public List<Project> findAll() {
+        return entityManager.createQuery("SELECT p FROM Project p", Project.class)
+                .getResultList();
+    }
+
+    public boolean delete(Long id) {
+        String jpql = "DELETE FROM Project p WHERE p.id = :id";
+        int deletedCount = entityManager.createQuery(jpql)
+                .setParameter("id", id)
+                .executeUpdate();
+        return deletedCount > 0;
     }
 }

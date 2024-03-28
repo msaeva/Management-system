@@ -115,4 +115,8 @@ public class TaskService {
         task.setUser(user);
         taskRepository.save(task);
     }
+
+    public boolean deleteByProjectId(Long id) {
+        return taskRepository.deleteByProjectId(id);
+    }
 }
