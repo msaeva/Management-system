@@ -2,10 +2,7 @@ package com.example.management_system.service;
 
 import com.example.management_system.controller.errors.InvalidUserException;
 import com.example.management_system.controller.errors.UserNotFoundException;
-import com.example.management_system.domain.dto.user.DetailedUserDTO;
-import com.example.management_system.domain.dto.user.RegisterUserValidation;
-import com.example.management_system.domain.dto.user.SimpleUserDTO;
-import com.example.management_system.domain.dto.user.UpdateUserValidation;
+import com.example.management_system.domain.dto.user.*;
 import com.example.management_system.domain.entity.User;
 import com.example.management_system.domain.entity.UserRole;
 import com.example.management_system.repository.UserRepository;
@@ -28,8 +25,6 @@ public class UserService {
 
     @Inject
     private UserRoleService userRoleService;
-
-    private static final Logger LOGGER = Logger.getLogger(UserService.class.getName());
 
     @Transactional
     public SimpleUserDTO create(RegisterUserValidation validation) {
@@ -60,6 +55,29 @@ public class UserService {
         return mapToSimpleUserDTO(saved);
     }
 
+    public boolean deleteById(Long id) {
+        return userRepository.deleteById(id);
+    }
+
+    public void update(UpdateUserValidation validation) {
+        User user = findById(validation.getId());
+        UserRole role = userRoleService.findByName(validation.getRole());
+
+        user.setFirstName(validation.getFirstName());
+        user.setLastName(validation.getLastName());
+        user.setRole(role);
+        userRepository.save(user);
+    }
+
+    public List<PrivateSimpleUserDTO> getByRole(String roleName) {
+        UserRole role = userRoleService.findByName(roleName);
+
+        return userRepository.findByRoleId(role.getId())
+                .stream()
+                .map(this::mapToPrivateSimpleUserDTO)
+                .collect(Collectors.toList());
+    }
+
     public Set<User> findAllByIds(List<Long> userIds) {
         return new HashSet<>(userRepository.findAllByIds(userIds));
     }
@@ -88,7 +106,14 @@ public class UserService {
                 user.getRole().getRole().name());
     }
 
-    public List<DetailedUserDTO> getALl() {
+    public PrivateSimpleUserDTO mapToPrivateSimpleUserDTO(User user) {
+        return new PrivateSimpleUserDTO(user.getId(),
+                user.getUsername(),
+                user.getFirstName() + " " + user.getLastName(),
+                user.getRole().getRole().name());
+    }
+
+    public List<DetailedUserDTO> getAll() {
         return userRepository
                 .findAll()
                 .stream()
@@ -105,18 +130,4 @@ public class UserService {
                 user.getRole().getRole().name());
     }
 
-    public boolean deleteById(Long id) {
-        return userRepository.deleteById(id);
-    }
-
-    public void update(UpdateUserValidation validation) {
-        User user = findById(validation.getId());
-        UserRole role = userRoleService.findByName(validation.getRole());
-
-        user.setFirstName(validation.getFirstName());
-        user.setLastName(validation.getLastName());
-        user.setRole(role);
-
-        userRepository.save(user);
-    }
 }

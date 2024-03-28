@@ -85,4 +85,12 @@ public class UserRepository {
                 .executeUpdate();
         return deletedCount > 0;
     }
+
+    public List<User> findByRoleId(Long id) {
+        String jpql = "SELECT u FROM User u WHERE u.role.id = :id";
+        TypedQuery<User> query = entityManager.createQuery(jpql, User.class);
+        query.setParameter("id", id);
+
+        return query.getResultList();
+    }
 }

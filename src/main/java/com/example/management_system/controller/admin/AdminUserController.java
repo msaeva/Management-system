@@ -10,22 +10,28 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-@Path("/admin")
+@Path("/admin/users")
 public class AdminUserController {
     @Inject
     private UserService userService;
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("/users")
     @RolesAllowed({"ADMIN"})
     public Response getAll() {
-        return Response.ok(userService.getALl()).build();
+        return Response.ok(userService.getAll()).build();
+    }
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @RolesAllowed({"ADMIN"})
+    @Path("/role/{role}")
+    public Response getByRole(@PathParam("role") String role) {
+        return Response.ok(userService.getByRole(role)).build();
     }
 
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("/users/{id}")
+    @Path("/{id}")
     @RolesAllowed({"ADMIN"})
     public Response delete(@PathParam("id") Long id) {
         if (userService.deleteById(id)) {
@@ -35,7 +41,6 @@ public class AdminUserController {
     }
 
     @POST
-    @Path("/users")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response create(RegisterUserValidation validation) {
@@ -46,7 +51,6 @@ public class AdminUserController {
     }
 
     @PUT
-    @Path("/users")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response update(UpdateUserValidation validation) {

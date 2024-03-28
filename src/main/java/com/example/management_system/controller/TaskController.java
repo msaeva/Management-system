@@ -43,7 +43,7 @@ public class TaskController {
 
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}")
-    @PUT
+    @GET
     @RolesAllowed({"PM", "USER", "ADMIN"})
     public Response get(@PathParam("id") long id) {
         TaskDTO taskDTO = taskService.getById(id);

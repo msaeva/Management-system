@@ -17,6 +17,7 @@ public class DetailedProjectDTO {
     private Long id;
     private String title;
     private String description;
+    private String abbreviation;
     private ProjectStatus status;
     private LocalDateTime createdDate;
     private List<DetailedTeamDTO> teams;

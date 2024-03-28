@@ -39,4 +39,12 @@ public class TaskRepository {
         Task task = entityManager.find(Task.class, id);
         return Optional.ofNullable(task);
     }
+
+    public boolean deleteByProjectId(Long id) {
+        String jpql = "DELETE FROM Task t WHERE t.project.id = :id";
+        int deletedCount = entityManager.createQuery(jpql)
+                .setParameter("id", id)
+                .executeUpdate();
+        return deletedCount > 0;
+    }
 }
