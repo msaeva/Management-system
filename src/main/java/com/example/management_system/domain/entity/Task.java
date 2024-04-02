@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -45,6 +46,9 @@ public class Task {
     @ManyToOne
     @JoinColumn(name = "PROJECT_ID", referencedColumnName = "ID")
     private Project project;
+
+    @OneToMany(mappedBy = "task", cascade = CascadeType.ALL)
+    private Set<Comment> comments;
 
     public Task(String title,
                 String description,

@@ -17,7 +17,6 @@ public class ProjectController {
     @Inject
     private ProjectService projectService;
 
-
     @Produces("application/json")
     @GET()
     @Path("/{id}")

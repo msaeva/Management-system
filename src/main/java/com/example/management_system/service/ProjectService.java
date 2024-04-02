@@ -2,12 +2,13 @@ package com.example.management_system.service;
 
 import com.example.management_system.controller.errors.InvalidUserException;
 import com.example.management_system.controller.errors.ProjectNotFoundException;
-import com.example.management_system.domain.dto.TaskDTO;
+import com.example.management_system.domain.dto.*;
 import com.example.management_system.domain.dto.project.*;
 import com.example.management_system.domain.dto.team.DetailedTeamDTO;
 import com.example.management_system.domain.dto.user.PrivateSimpleUserDTO;
 import com.example.management_system.domain.dto.user.SimpleUserDTO;
 import com.example.management_system.domain.entity.Project;
+import com.example.management_system.domain.entity.Task;
 import com.example.management_system.domain.entity.Team;
 import com.example.management_system.domain.entity.User;
 import com.example.management_system.domain.enums.ProjectStatus;
@@ -54,7 +55,7 @@ public class ProjectService {
                 pms);
 
         Project saved = projectRepository.save(project);
-        return toPrivateProjectDTO(saved);
+        return mapToPrivateProjectDTO(saved);
     }
 
     public Project findById(Long id) {
@@ -69,10 +70,10 @@ public class ProjectService {
             throw new InvalidUserException("User is not authenticated");
         }
         List<Project> projects = projectRepository.getProjectsByUserId(authUser.getId());
-        return projects.stream().map(this::toSimpleProjectDTO).collect(Collectors.toList());
+        return projects.stream().map(this::mapToSimpleProjectDTO).collect(Collectors.toList());
     }
 
-    public SimpleProjectDTO toSimpleProjectDTO(Project project) {
+    public SimpleProjectDTO mapToSimpleProjectDTO(Project project) {
         return new SimpleProjectDTO(project.getId(), project.getTitle());
     }
 
@@ -82,10 +83,10 @@ public class ProjectService {
 
     public DetailedProjectDTO getById(Long id) {
         Project project = findById(id);
-        return toDetailedProjectDTO(project);
+        return mapToDetailedProjectDTO(project);
     }
 
-    private DetailedProjectDTO toDetailedProjectDTO(Project project) {
+    private DetailedProjectDTO mapToDetailedProjectDTO(Project project) {
         List<DetailedTeamDTO> teams = project
                 .getTeams().stream().map(t -> teamService.mapToDetailedTeamDTO(t))
                 .collect(Collectors.toList());
@@ -108,11 +109,11 @@ public class ProjectService {
         return projectRepository
                 .findAll()
                 .stream()
-                .map(this::toPrivateProjectDTO)
+                .map(this::mapToPrivateProjectDTO)
                 .collect(Collectors.toList());
     }
 
-    public PrivateProjectDTO toPrivateProjectDTO(Project project) {
+    public PrivateProjectDTO mapToPrivateProjectDTO(Project project) {
         return new PrivateProjectDTO(project.getId(), project.getTitle(), project.getDescription(), project.getAbbreviation(), project.getStatus().name());
     }
 
@@ -127,7 +128,7 @@ public class ProjectService {
 
         Project updated = projectRepository.save(project);
 
-        return toDetailedProjectDTO(updated);
+        return mapToDetailedProjectDTO(updated);
     }
 
     public boolean deleteById(Long id) {
@@ -190,5 +191,50 @@ public class ProjectService {
                 .stream()
                 .map(p -> userService.mapToSimpleUserDTO(p))
                 .collect(Collectors.toList());
+    }
+
+    public List<ProjectTaskDTO> getAllProjectsWithTasks() {
+        return projectRepository
+                .findAll()
+                .stream()
+                .map(this::mapToProjectTaskDTO)
+                .collect(Collectors.toList());
+    }
+
+    private ProjectTaskDTO mapToProjectTaskDTO(Project p) {
+        PrivateProjectDTO project = mapToPrivateProjectDTO(p);
+        List<SimpleTaskDTO> tasks = p.getTasks()
+                .stream()
+                .map(this::mapToPrivateTaskDTO)
+                .limit(5)
+                .collect(Collectors.toList());
+
+        return new ProjectTaskDTO(project, tasks);
+    }
+
+    private SimpleTaskDTO mapToPrivateTaskDTO(Task task) {
+        return new SimpleTaskDTO(
+                task.getId(),
+                task.getTitle(),
+                task.getAbbreviation(),
+                task.getStatus()
+        );
+    }
+
+    private DetailedTaskDTO mapToDetailedTaskDTO(Task t) {
+        return new DetailedTaskDTO(
+                t.getId(),
+                t.getTitle(),
+                t.getDescription(),
+                t.getAbbreviation(),
+                t.getCreatedDate(),
+                t.getStatus());
+    }
+
+    public Pagination<DetailedTaskDTO> getAllProjectTasks(Long projectId, int page, int size, String sort, String order) {
+        List<DetailedTaskDTO> tasks = taskService.getAllProjectTasks(projectId, page, size, sort, order);
+        long totalRecords = taskService.getTasksCountByProjectId(projectId);
+
+        return new Pagination<>(tasks, totalRecords);
     }
 }

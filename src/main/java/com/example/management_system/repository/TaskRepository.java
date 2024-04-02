@@ -4,6 +4,7 @@ import com.example.management_system.domain.entity.Task;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
 
 import java.util.List;
@@ -46,5 +47,29 @@ public class TaskRepository {
                 .setParameter("id", id)
                 .executeUpdate();
         return deletedCount > 0;
+    }
+
+    public boolean deleteById(Long id) {
+        String jpql = "DELETE FROM Task t WHERE t.id = :id";
+        int deletedCount = entityManager.createQuery(jpql)
+                .setParameter("id", id)
+                .executeUpdate();
+        return deletedCount > 0;
+    }
+
+    public List<Task> getAllProjectTasks(Long projectId, int page, int size, String sort, String order) {
+        String queryString = "SELECT t FROM Task t WHERE t.project.id = :projectId ORDER BY t." + sort + " " + order;
+        Query query = entityManager.createQuery(queryString);
+        query.setParameter("projectId", projectId);
+        query.setFirstResult(page * size);
+        query.setMaxResults(size);
+        return query.getResultList();
+    }
+
+    public long getTaskCountByProjectId(Long projectId) {
+        String queryString = "SELECT COUNT(t) FROM Task t WHERE t.project.id = :projectId";
+        Query query = entityManager.createQuery(queryString);
+        query.setParameter("projectId", projectId);
+        return (Long) query.getSingleResult();
     }
 }

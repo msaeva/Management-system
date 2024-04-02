@@ -1,5 +1,7 @@
 package com.example.management_system.controller.admin;
 
+import com.example.management_system.domain.dto.DetailedTaskDTO;
+import com.example.management_system.domain.dto.Pagination;
 import com.example.management_system.domain.dto.project.PrivateProjectDTO;
 import com.example.management_system.domain.dto.project.ProjectValidation;
 import com.example.management_system.domain.dto.project.UpdateProjectValidation;
@@ -25,6 +27,28 @@ public class AdminProjectController {
     @RolesAllowed({"ADMIN"})
     public Response getAll() {
         return Response.ok(projectService.getAll()).build();
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/tasks")
+    @RolesAllowed({"ADMIN"})
+    public Response getAllProjectsWithTasks() {
+        return Response.ok(projectService.getAllProjectsWithTasks()).build();
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/tasks")
+    @RolesAllowed({"ADMIN"})
+    public Response getAllProjectTasks(@PathParam("id") Long id,
+                                       @QueryParam("page") int page,
+                                       @QueryParam("size") int pageSize,
+                                       @QueryParam("sort") String sortField,
+                                       @QueryParam("order") String sortOrder
+    ) {
+        Pagination<DetailedTaskDTO> pagination = projectService.getAllProjectTasks(id, page, pageSize, sortField, sortOrder);
+        return Response.ok(pagination).build();
     }
 
     @GET
