@@ -53,6 +53,9 @@ public class Project {
     )
     private Set<User> pms = new HashSet<>();
 
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
+    private Set<Task> tasks;
+
     public Project(String title,
                    String description,
                    ProjectStatus status,

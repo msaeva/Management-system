@@ -3,6 +3,7 @@ package com.example.management_system.service;
 import com.example.management_system.controller.errors.InvalidUserException;
 import com.example.management_system.domain.dto.CommentDTO;
 import com.example.management_system.domain.dto.CommentValidation;
+import com.example.management_system.domain.dto.PublicCommentDTO;
 import com.example.management_system.domain.entity.Comment;
 import com.example.management_system.domain.entity.Task;
 import com.example.management_system.domain.entity.User;
@@ -16,8 +17,6 @@ import java.util.Objects;
 @Stateless
 public class CommentService {
     @Inject
-    private UserService userService;
-    @Inject
     private TaskService taskService;
     @Inject
     private AuthService authService;
@@ -25,19 +24,19 @@ public class CommentService {
     private CommentRepository commentRepository;
 
     public CommentDTO create(CommentValidation validation) {
-        User author = userService.findById(validation.getAuthorID());
+        User authUser = authService.getAuthenticatedUser();
         Task task = taskService.findById(validation.getTaskID());
 
         Comment comment = new Comment();
         comment.setComment(validation.getComment());
         comment.setCreatedDate(LocalDateTime.now());
         comment.setTask(task);
-        comment.setAuthor(author);
+        comment.setAuthor(authUser);
 
         Comment saved = commentRepository.save(comment);
 
         return new CommentDTO(saved.getComment(),
-                author.getUsername(),
+                authUser.getUsername(),
                 saved.getCreatedDate().toString(),
                 task.getId());
     }
@@ -76,5 +75,13 @@ public class CommentService {
         return new CommentDTO(updated.getComment(),
                 authUser.getUsername(),
                 updated.getCreatedDate().toString());
+    }
+
+    public PublicCommentDTO toPublicCommentDTO(Comment comment) {
+        return new PublicCommentDTO(comment.getId(),
+                comment.getComment(),
+                comment.getAuthor().getFirstName() + " " + comment.getAuthor().getLastName(),
+                comment.getCreatedDate(),
+                comment.getTask().getId());
     }
 }

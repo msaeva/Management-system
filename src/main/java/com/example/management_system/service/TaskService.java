@@ -3,8 +3,8 @@ package com.example.management_system.service;
 import com.example.management_system.controller.errors.InvalidTaskException;
 import com.example.management_system.controller.errors.InvalidUserException;
 import com.example.management_system.controller.errors.TaskNotFoundException;
-import com.example.management_system.domain.dto.TaskDTO;
-import com.example.management_system.domain.dto.TaskValidation;
+import com.example.management_system.domain.dto.*;
+import com.example.management_system.domain.entity.Comment;
 import com.example.management_system.domain.entity.Project;
 import com.example.management_system.domain.entity.Task;
 import com.example.management_system.domain.entity.User;
@@ -16,6 +16,8 @@ import jakarta.inject.Inject;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @Stateless
@@ -31,14 +33,19 @@ public class TaskService {
     @Inject
     public AuthService authService;
 
-    public TaskDTO create(TaskValidation validation) {
+    @Inject
+    public CommentService commentService;
+    private static final Logger LOGGER = Logger.getLogger(TaskService.class.getName());
+
+    public DetailedTaskDTO create(TaskValidation validation) {
+
         Project project = projectService.findById(validation.getProjectId());
         Task task = new Task(validation.getTitle(),
                 validation.getDescription(),
                 TaskStatus.TODO.name(),
                 LocalDateTime.now(),
                 project,
-                project.getAbbreviation() + "-" + validation.getNumber(),
+                project.getAbbreviation() + "-",
                 validation.getNumber());
 
         if (validation.getUserId() != null) {
@@ -55,7 +62,9 @@ public class TaskService {
         }
 
         Task savedTask = taskRepository.save(task);
-        return toDTO(savedTask);
+        task.setAbbreviation(project.getAbbreviation() + "-" + savedTask.getId());
+        taskRepository.save(savedTask);
+        return mapToDetailedTaskDTO(savedTask);
     }
 
     public List<TaskDTO> getTasksByProjectId(long projectId) {
@@ -66,18 +75,29 @@ public class TaskService {
         return taskRepository
                 .getTasksByUserAndProject(authUser.getId(), projectId)
                 .stream()
-                .map(this::toDTO)
+                .map(this::mapToTaskDTO)
                 .collect(Collectors.toList());
     }
 
-    private TaskDTO toDTO(Task task) {
+    private DetailedTaskDTO mapToDetailedTaskDTO(Task task) {
+        return new DetailedTaskDTO(
+                task.getId(),
+                task.getTitle(),
+                task.getDescription(),
+                task.getAbbreviation(),
+                task.getCreatedDate(),
+                task.getStatus());
+    }
+
+    private TaskDTO mapToTaskDTO(Task task) {
+        Long assignedUser = task.getUser() != null ? task.getUser().getId() : null;
         return new TaskDTO(
                 task.getId(),
                 task.getTitle(),
                 task.getDescription(),
                 task.getStatus(),
                 task.getProject().getId(),
-                task.getUser().getId(),
+                assignedUser,
                 task.getAbbreviation());
     }
 
@@ -95,7 +115,7 @@ public class TaskService {
 
     public TaskDTO getById(Long id) {
         Task task = findById(id);
-        return this.toDTO(task);
+        return this.mapToTaskDTO(task);
     }
 
     public Task findById(Long id) {
@@ -118,5 +138,38 @@ public class TaskService {
 
     public boolean deleteByProjectId(Long id) {
         return taskRepository.deleteByProjectId(id);
+    }
+
+    public List<PublicCommentDTO> getTaskComments(Long taskId) {
+        Task task = findById(taskId);
+
+        Set<Comment> comments = task.getComments();
+        return comments
+                .stream().map(c -> commentService.toPublicCommentDTO(c)).collect(Collectors.toList());
+    }
+
+    public void update(UpdateTaskValidation validation) {
+        Task task = findById(validation.getId());
+        task.setStatus(TaskStatus.valueOf(validation.getStatus()).name());
+        task.setDescription(validation.getDescription());
+        task.setTitle(validation.getTitle());
+        task.setAbbreviation(validation.getAbbreviation());
+        taskRepository.save(task);
+    }
+
+    public boolean deleteById(Long id) {
+        Task task = findById(id);
+        return taskRepository.deleteById(task.getId());
+    }
+
+    public List<DetailedTaskDTO> getAllProjectTasks(Long projectId, int page, int size, String sort, String sortOrder) {
+        return taskRepository.getAllProjectTasks(projectId, page, size, sort, sortOrder)
+                .stream()
+                .map(this::mapToDetailedTaskDTO)
+                .collect(Collectors.toList());
+    }
+
+    public long getTasksCountByProjectId(Long projectId) {
+        return taskRepository.getTaskCountByProjectId(projectId);
     }
 }

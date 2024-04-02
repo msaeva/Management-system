@@ -1,7 +1,7 @@
 package com.example.management_system.controller;
 
+import com.example.management_system.domain.dto.PublicCommentDTO;
 import com.example.management_system.domain.dto.TaskDTO;
-import com.example.management_system.domain.dto.TaskValidation;
 import com.example.management_system.service.TaskService;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
@@ -9,19 +9,13 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
+import java.util.List;
+
 @Path("/tasks")
 public class TaskController {
 
     @Inject
     public TaskService taskService;
-
-    @Produces(MediaType.APPLICATION_JSON)
-    @POST()
-    @RolesAllowed({"ADMIN", "PM"})
-    public Response create(TaskValidation validation) {
-        TaskDTO taskDTO = taskService.create(validation);
-        return Response.ok(taskDTO).build();
-    }
 
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{taskId}")
@@ -48,5 +42,14 @@ public class TaskController {
     public Response get(@PathParam("id") long id) {
         TaskDTO taskDTO = taskService.getById(id);
         return Response.ok(taskDTO).build();
+    }
+
+    @RolesAllowed({"USER"})
+    @Produces("application/json")
+    @Path("/{taskId}/comments")
+    @GET
+    public Response getComments(@PathParam("taskId") Long taskId) {
+        List<PublicCommentDTO> comments = taskService.getTaskComments(taskId);
+        return Response.ok(comments).build();
     }
 }

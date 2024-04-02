@@ -43,12 +43,8 @@ public class TeamService {
         team.getProjects().add(project);
 
 //        // TODO check if user is already added to the team
-//        if (validation.getUserIds() != null && !validation.getUserIds().isEmpty()) {
-//            Set<User> usersToAdd = userService.findAllByIds(validation.getUserIds());
-//            team.getUsers().addAll(usersToAdd);
-//        }
         if (validation.getUserIds() != null && !validation.getUserIds().isEmpty()) {
-            Set<User> existingUsers = team.getUsers(); // Get the existing users in the team
+            Set<User> existingUsers = team.getUsers();
             Set<User> usersToAdd = userService.findAllByIds(validation.getUserIds());
 
             usersToAdd.removeIf(existingUsers::contains);

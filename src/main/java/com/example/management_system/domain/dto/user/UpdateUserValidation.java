@@ -10,14 +10,4 @@ public class UpdateUserValidation {
     private String firstName;
     private String lastName;
     private String role;
-
-    @Override
-    public String toString() {
-        return "UpdateUserValidation{" +
-                "id=" + id +
-                ", firstName='" + firstName + '\'' +
-                ", lastName='" + lastName + '\'' +
-                ", role='" + role + '\'' +
-                '}';
-    }
 }
