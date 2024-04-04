@@ -1,4 +1,4 @@
-package com.example.management_system.domain.dto;
+package com.example.management_system.domain.dto.task;
 
 import lombok.Getter;
 import lombok.Setter;

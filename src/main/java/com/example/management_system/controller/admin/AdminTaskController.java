@@ -1,8 +1,8 @@
 package com.example.management_system.controller.admin;
 
-import com.example.management_system.domain.dto.DetailedTaskDTO;
-import com.example.management_system.domain.dto.TaskValidation;
-import com.example.management_system.domain.dto.UpdateTaskValidation;
+import com.example.management_system.domain.dto.task.DetailedTaskDTO;
+import com.example.management_system.domain.dto.task.TaskValidation;
+import com.example.management_system.domain.dto.task.UpdateTaskValidation;
 import com.example.management_system.service.TaskService;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;

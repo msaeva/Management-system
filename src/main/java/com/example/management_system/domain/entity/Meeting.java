@@ -3,10 +3,13 @@ package com.example.management_system.domain.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
-@Getter
+@Getter @Setter
 @RequiredArgsConstructor
 @Entity
 @Table(name = "MEETINGS")
@@ -18,13 +21,27 @@ public class Meeting {
     @Column(name = "ID")
     private Long id;
 
+    @Column(name = "TITLE")
+    private String title;
+
     @Column(name = "STATUS")
     private String status;
 
-    @Column(name = "MEETING_DATETIME")
-    private LocalDateTime meetingDateTime;
+    @Column(name = "START_DATE")
+    private LocalDateTime startDate;
+
+    @Column(name = "END_DATE")
+    private LocalDateTime endDate;
 
     @ManyToOne
     @JoinColumn(name = "PROJECT_ID", referencedColumnName = "ID")
     private Project project;
+
+    @ManyToMany
+    @JoinTable(
+            name = "MEETINGS_TEAMS",
+            joinColumns = @JoinColumn(name = "MEETING_ID"),
+            inverseJoinColumns = @JoinColumn(name = "TEAM_ID")
+    )
+    private Set<Team> teams = new HashSet<>();
 }

@@ -29,8 +29,6 @@ public class TeamService {
     @Inject
     private ProjectService projectService;
 
-    private static final Logger LOGGER = Logger.getLogger(UserController.class.getName());
-
     public DetailedTeamDTO create(TeamValidation validation) {
         Team team = new Team();
 
@@ -42,7 +40,7 @@ public class TeamService {
         Project project = projectService.findById(validation.getProjectId());
         team.getProjects().add(project);
 
-//        // TODO check if user is already added to the team
+        // TODO check if user is already added to the team
         if (validation.getUserIds() != null && !validation.getUserIds().isEmpty()) {
             Set<User> existingUsers = team.getUsers();
             Set<User> usersToAdd = userService.findAllByIds(validation.getUserIds());

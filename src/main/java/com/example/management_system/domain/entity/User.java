@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -37,6 +39,13 @@ public class User implements Serializable {
     @JoinColumn(name = "ROLE_ID", referencedColumnName = "ID")
     private UserRole role;
 
+    @ManyToMany
+    @JoinTable(
+            name = "USERS_TEAMS",
+            joinColumns = @JoinColumn(name = "USER_ID"),
+            inverseJoinColumns = @JoinColumn(name = "TEAM_ID")
+    )
+    private Set<Team> teams = new HashSet<>();
     public User(String username, String firstName, String lastName, String email, String password, UserRole role) {
         this.username = username;
         this.firstName = firstName;

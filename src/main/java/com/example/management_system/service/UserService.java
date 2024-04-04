@@ -11,11 +11,7 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import org.mindrot.jbcrypt.BCrypt;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.logging.Logger;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Stateless
@@ -69,10 +65,12 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public List<PrivateSimpleUserDTO> getByRole(String roleName) {
-        UserRole role = userRoleService.findByName(roleName);
+    public List<PrivateSimpleUserDTO> getByRoles(String roles) {
+        List<UserRole> userRoles = Arrays.stream(roles.split(","))
+                .map(role -> userRoleService.findByName(role))
+                .collect(Collectors.toList());
 
-        return userRepository.findByRoleId(role.getId())
+        return userRepository.findAllByRoleIds(userRoles.stream().map(UserRole::getId).collect(Collectors.toList()))
                 .stream()
                 .map(this::mapToPrivateSimpleUserDTO)
                 .collect(Collectors.toList());
@@ -83,7 +81,9 @@ public class UserService {
     }
 
     public User findById(Long id) {
-        return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User with id : " + id + " not found!"));
+        return userRepository
+                .findById(id)
+                .orElseThrow(() -> new UserNotFoundException("User with id : " + id + " not found!"));
     }
 
     public Optional<User> findByUsername(String username) {
@@ -130,4 +130,14 @@ public class UserService {
                 user.getRole().getRole().name());
     }
 
+//    public List<PrivateSimpleUserDTO> getAllUsersAndProjectManagers() {
+//        UserRole userRole = userRoleService.findByName(Role.USER.name());
+//        UserRole pmRole = userRoleService.findByName(Role.PM.name());
+//
+//        return userRepository
+//                .findAllByRoleIds(userRole.getId(), pmRole.getId())
+//                .stream()
+//                .map(this::mapToPrivateSimpleUserDTO)
+//                .collect(Collectors.toList());
+//    }
 }
