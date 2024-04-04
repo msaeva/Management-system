@@ -16,8 +16,9 @@ public class UserRoleService {
     private UserRoleRepository userRoleRepository;
 
     public UserRole findByName(String name) {
-        // TODO throw custom exception
-        return userRoleRepository.findByName(name).orElse(null);
+        return userRoleRepository
+                .findByName(name)
+                .orElseThrow(() -> new RuntimeException("Role with name: " + name + " not found!"));
     }
 
     public Set<String> findRoleByUsername(String username) {

@@ -1,7 +1,7 @@
 package com.example.management_system.controller;
 
 import com.example.management_system.domain.dto.PublicCommentDTO;
-import com.example.management_system.domain.dto.TaskDTO;
+import com.example.management_system.domain.dto.task.TaskDTO;
 import com.example.management_system.service.TaskService;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;

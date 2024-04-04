@@ -4,6 +4,9 @@ import com.example.management_system.controller.errors.InvalidUserException;
 import com.example.management_system.controller.errors.ProjectNotFoundException;
 import com.example.management_system.domain.dto.*;
 import com.example.management_system.domain.dto.project.*;
+import com.example.management_system.domain.dto.task.DetailedTaskDTO;
+import com.example.management_system.domain.dto.task.SimpleTaskDTO;
+import com.example.management_system.domain.dto.task.TaskDTO;
 import com.example.management_system.domain.dto.team.DetailedTeamDTO;
 import com.example.management_system.domain.dto.user.PrivateSimpleUserDTO;
 import com.example.management_system.domain.dto.user.SimpleUserDTO;
@@ -234,7 +237,20 @@ public class ProjectService {
     public Pagination<DetailedTaskDTO> getAllProjectTasks(Long projectId, int page, int size, String sort, String order) {
         List<DetailedTaskDTO> tasks = taskService.getAllProjectTasks(projectId, page, size, sort, order);
         long totalRecords = taskService.getTasksCountByProjectId(projectId);
-
         return new Pagination<>(tasks, totalRecords);
+    }
+
+    public List<ProjectUserDTO> getAllProjectsWithUsers() {
+        List<Project> all = this.projectRepository.findAll();
+
+        ArrayList<ProjectUserDTO> result = new ArrayList<>();
+        for (Project project : all) {
+            List<Long> userIds = project.getTeams().stream()
+                    .flatMap(t -> t.getUsers().stream())
+                    .map(User::getId).collect(Collectors.toList());
+
+            result.add(new ProjectUserDTO(project.getId(), project.getTitle(), userIds));
+        }
+        return result;
     }
 }

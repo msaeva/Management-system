@@ -1,5 +1,6 @@
 package com.example.management_system.service;
 
+import com.example.management_system.controller.errors.CommentNotFoundException;
 import com.example.management_system.controller.errors.InvalidUserException;
 import com.example.management_system.domain.dto.CommentDTO;
 import com.example.management_system.domain.dto.CommentValidation;
@@ -42,8 +43,9 @@ public class CommentService {
     }
 
     public Comment findById(Long id) {
-        // TODO throw custom exception
-        return commentRepository.findById(id).orElseThrow();
+        return commentRepository
+                .findById(id)
+                .orElseThrow(() -> new CommentNotFoundException("Comment with id: " + id + " not found!"));
     }
 
     public boolean remove(long id) {

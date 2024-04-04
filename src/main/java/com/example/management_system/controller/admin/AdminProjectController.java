@@ -1,6 +1,6 @@
 package com.example.management_system.controller.admin;
 
-import com.example.management_system.domain.dto.DetailedTaskDTO;
+import com.example.management_system.domain.dto.task.DetailedTaskDTO;
 import com.example.management_system.domain.dto.Pagination;
 import com.example.management_system.domain.dto.project.PrivateProjectDTO;
 import com.example.management_system.domain.dto.project.ProjectValidation;
@@ -126,4 +126,13 @@ public class AdminProjectController {
         List<SimpleUserDTO> projectManagers = projectService.removeProjectManager(projectId, pmId);
         return Response.ok(projectManagers).build();
     }
+
+    @RolesAllowed("ADMIN")
+    @Produces(MediaType.APPLICATION_JSON)
+    @GET()
+    @Path("/users")
+    public Response getAllDetailed() {
+        return Response.ok(projectService.getAllProjectsWithUsers()).build();
+    }
+
 }

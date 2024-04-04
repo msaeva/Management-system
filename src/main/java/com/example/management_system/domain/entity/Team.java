@@ -2,7 +2,6 @@ package com.example.management_system.domain.entity;
 
 import jakarta.json.bind.annotation.JsonbTransient;
 import jakarta.persistence.*;
-import jakarta.xml.bind.annotation.XmlTransient;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -41,5 +40,13 @@ public class Team {
             inverseJoinColumns = @JoinColumn(name = "PROJECT_ID")
     )
     private Set<Project> projects = new HashSet<>();
+
+    @ManyToMany
+    @JoinTable(
+            name = "MEETINGS_TEAMS",
+            joinColumns = @JoinColumn(name = "TEAM_ID"),
+            inverseJoinColumns = @JoinColumn(name = "MEETING_ID")
+    )
+    private Set<Meeting> meetings = new HashSet<>();
 
 }

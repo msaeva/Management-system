@@ -18,16 +18,18 @@ public class AdminUserController {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @RolesAllowed({"ADMIN"})
-    public Response getAll() {
-        return Response.ok(userService.getAll()).build();
+    @Path("/roles")
+    public Response getByRole(@QueryParam("roles") String roles) {
+        return Response.ok(userService.getByRoles(roles)).build();
     }
+
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @RolesAllowed({"ADMIN"})
-    @Path("/role/{role}")
-    public Response getByRole(@PathParam("role") String role) {
-        return Response.ok(userService.getByRole(role)).build();
+    public Response getAll() {
+        return Response.ok(userService.getAll()).build();
     }
+
 
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
