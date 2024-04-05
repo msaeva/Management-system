@@ -1,6 +1,8 @@
 package com.example.management_system.controller.admin;
 
+import com.example.management_system.domain.dto.meeting.CreateMeetingValidation;
 import com.example.management_system.domain.dto.meeting.PrivateMeetingDTO;
+import com.example.management_system.domain.dto.meeting.PublicMeetingDTO;
 import com.example.management_system.domain.dto.meeting.UpdateMeetingValidation;
 import com.example.management_system.service.MeetingService;
 import jakarta.annotation.security.RolesAllowed;
@@ -55,5 +57,13 @@ public class AdminMeetingController {
                     .build();
         }
         return Response.status(Response.Status.BAD_REQUEST).build();
+    }
+
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @RolesAllowed({"ADMIN"})
+    public Response create(CreateMeetingValidation validation) {
+        PublicMeetingDTO meeting = meetingService.create(validation);
+        return Response.ok(meeting).build();
     }
 }

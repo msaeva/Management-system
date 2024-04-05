@@ -44,4 +44,13 @@ public class Meeting {
             inverseJoinColumns = @JoinColumn(name = "TEAM_ID")
     )
     private Set<Team> teams = new HashSet<>();
+
+    public Meeting(String title, String status, LocalDateTime startDate, LocalDateTime endDate, Project project, Set<Team> teams) {
+        this.title = title;
+        this.status = status;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.project = project;
+        this.teams = teams;
+    }
 }
