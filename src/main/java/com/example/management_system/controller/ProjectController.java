@@ -27,15 +27,16 @@ public class ProjectController {
     @Produces("application/json")
     @GET()
     @Path("/user")
+    @RolesAllowed("USER")
     public Response getUserProjects() {
         return Response.ok(projectService.getUserProjects()).build();
     }
 
     @GET
     @Path("/{projectId}/tasks")
-    @RolesAllowed({"ADMIN", "PM", "USER"})
-    public Response getTasksByProjectId(@PathParam("projectId") long projectId) {
-        List<TaskDTO> tasks = projectService.getProjectTasks(projectId);
+    @RolesAllowed({"USER"})
+    public Response getTasksForUserTeamsByProjectId(@PathParam("projectId") long projectId) {
+        List<TaskDTO> tasks = projectService.getTasksForUserTeamsByProjectId(projectId);
         return Response.ok(tasks).build();
     }
 }

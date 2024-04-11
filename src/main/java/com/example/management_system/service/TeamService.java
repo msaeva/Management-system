@@ -99,4 +99,8 @@ public class TeamService {
         }
         return false;
     }
+
+    public Set<Team> findByIds(List<Long> teamIds) {
+        return new HashSet<>(teamRepository.findByIds(teamIds));
+    }
 }

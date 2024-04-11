@@ -72,4 +72,12 @@ public class TaskRepository {
         query.setParameter("projectId", projectId);
         return (Long) query.getSingleResult();
     }
+
+    public List<Task> getAllByProject(long projectId) {
+        String jpql = "SELECT t FROM Task t WHERE t.project.id = :projectId";
+        TypedQuery<Task> query = entityManager.createQuery(jpql, Task.class);
+        query.setParameter("projectId", projectId);
+
+        return query.getResultList();
+    }
 }

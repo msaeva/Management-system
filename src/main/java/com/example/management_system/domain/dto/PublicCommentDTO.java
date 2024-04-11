@@ -13,6 +13,7 @@ public class PublicCommentDTO {
     private Long id;
     private String comment;
     private String fullName;
+    private Long authorId;
     private LocalDateTime createdDate;
     private Long taskId;
 }

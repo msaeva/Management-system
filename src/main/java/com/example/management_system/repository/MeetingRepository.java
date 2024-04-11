@@ -1,11 +1,17 @@
 package com.example.management_system.repository;
 
-import com.example.management_system.domain.entity.*;
+import com.example.management_system.domain.entity.Meeting;
+import com.example.management_system.domain.entity.Project;
+import com.example.management_system.domain.entity.Team;
+import com.example.management_system.domain.entity.User;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
-import jakarta.persistence.criteria.*;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.Root;
 
 import java.util.List;
 import java.util.Optional;
@@ -15,19 +21,6 @@ public class MeetingRepository {
     @PersistenceContext
     private EntityManager entityManager;
 
-    public List<Meeting> getByUserId(Long id) {
-        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-        CriteriaQuery<Meeting> query = criteriaBuilder.createQuery(Meeting.class);
-        Root<Meeting> meetingRoot = query.from(Meeting.class);
-
-        Join<Meeting, Team> teamsJoin = meetingRoot.join("teams");
-        Join<Team, User> usersJoin = teamsJoin.join("users");
-
-        query.select(meetingRoot).distinct(true);
-        query.where(criteriaBuilder.equal(usersJoin.get("id"), id));
-
-        return entityManager.createQuery(query).getResultList();
-    }
 
     public Optional<Meeting> findById(Long id) {
         if (id == null) {
@@ -94,5 +87,31 @@ public class MeetingRepository {
                 .setParameter("id", id)
                 .executeUpdate();
         return deletedCount > 0;
+    }
+
+    public List<Meeting> getByUserId(Long id) {
+        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Meeting> query = criteriaBuilder.createQuery(Meeting.class);
+        Root<Meeting> meetingRoot = query.from(Meeting.class);
+
+        Join<Meeting, Team> teamsJoin = meetingRoot.join("teams");
+        Join<Team, User> usersJoin = teamsJoin.join("users");
+
+        query.select(meetingRoot).distinct(true);
+        query.where(criteriaBuilder.equal(usersJoin.get("id"), id));
+
+        return entityManager.createQuery(query).getResultList();
+    }
+
+    public List<Meeting> getPMMeetingsById(Long id) {
+        String jpql = "SELECT m " +
+                "FROM Meeting m " +
+                "JOIN m.project p " +
+                "JOIN p.pms ppm " +
+                "WHERE ppm.id = :userId";
+        TypedQuery<Meeting> query = entityManager.createQuery(jpql, Meeting.class)
+                .setParameter("userId", id);
+
+        return query.getResultList();
     }
 }

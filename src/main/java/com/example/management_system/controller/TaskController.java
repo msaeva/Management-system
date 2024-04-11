@@ -27,24 +27,34 @@ public class TaskController {
     }
 
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("/{id}/users/{userId}")
-    @PUT
-    @RolesAllowed({"PM"})
-    public Response assignUser(@PathParam("id") long id, @PathParam("userId") long userId) {
-        taskService.assignUserToTask(id, userId);
-        return Response.ok().build();
-    }
-
-    @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}")
     @GET
-    @RolesAllowed({"PM", "USER", "ADMIN"})
+    @RolesAllowed({"PM", "USER"})
     public Response get(@PathParam("id") long id) {
         TaskDTO taskDTO = taskService.getById(id);
         return Response.ok(taskDTO).build();
     }
 
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/estimation-time")
+    @PUT
     @RolesAllowed({"USER"})
+    public Response setEstimationTime(@PathParam("id")Long id, Integer estimationTime) {
+        TaskDTO taskDTO = taskService.setEstimationTime(id, estimationTime);
+        return Response.ok(taskDTO).build();
+    }
+
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/progress")
+    @PUT
+    @RolesAllowed({"USER"})
+    public Response changeProgress(@PathParam("id")Long id, Integer progress) {
+        TaskDTO taskDTO = taskService.changeProgress(id, progress);
+        return Response.ok(taskDTO).build();
+    }
+
+
+    @RolesAllowed({"USER", "PM"})
     @Produces("application/json")
     @Path("/{taskId}/comments")
     @GET

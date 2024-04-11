@@ -1,31 +1,26 @@
 package com.example.management_system.config.security;
 
 import jakarta.security.enterprise.credential.Credential;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.Set;
 
+@Getter
+@Setter
 public class UserPrincipal implements Credential {
-    private String principal;
+    private Long id;
+    private String username;
     private Set<String> authorities;
 
-    public UserPrincipal(String username, Set<String> authorities) {
-        this.principal = username;
+    public UserPrincipal(Long id, String username, Set<String> authorities) {
+        this.id = id;
+        this.username = username;
         this.authorities = authorities;
     }
 
-    public String getPrincipal() {
-        return principal;
-    }
-
-    public void setPrincipal(String principal) {
-        this.principal = principal;
-    }
-
-    public Set<String> getAuthorities() {
-        return authorities;
-    }
-
-    public void setAuthorities(Set<String> authorities) {
+    public UserPrincipal(String username, Set<String> authorities) {
+        this.username = username;
         this.authorities = authorities;
     }
 }

@@ -8,6 +8,7 @@ import com.example.management_system.domain.dto.task.DetailedTaskDTO;
 import com.example.management_system.domain.dto.task.SimpleTaskDTO;
 import com.example.management_system.domain.dto.task.TaskDTO;
 import com.example.management_system.domain.dto.team.DetailedTeamDTO;
+import com.example.management_system.domain.dto.team.SimpleTeamDTO;
 import com.example.management_system.domain.dto.user.PrivateSimpleUserDTO;
 import com.example.management_system.domain.dto.user.SimpleUserDTO;
 import com.example.management_system.domain.entity.Project;
@@ -80,8 +81,17 @@ public class ProjectService {
         return new SimpleProjectDTO(project.getId(), project.getTitle());
     }
 
-    public List<TaskDTO> getProjectTasks(long projectId) {
-        return taskService.getTasksByProjectId(projectId);
+    public List<TaskDTO> getTasksForUserTeamsByProjectId(long projectId) {
+        return taskService.getTasksForUserTeamsByProjectId(projectId);
+    }
+
+    public List<TaskDTO> getAllByTaskByProjectManager(long projectId) {
+        User authUser = authService.getAuthenticatedUser();
+        if (authUser.getRole().getRole() != Role.PM) {
+            throw new InvalidUserException("Invalid user!");
+        }
+
+        return taskService.getAllTasksByProjectId(projectId);
     }
 
     public DetailedProjectDTO getById(Long id) {
@@ -242,9 +252,21 @@ public class ProjectService {
 
     public List<ProjectUserDTO> getAllProjectsWithUsers() {
         List<Project> all = this.projectRepository.findAll();
+        return mapToProjectUserDTO(all);
+    }
 
+    public List<ProjectUserDTO> getAllPMProjectsWithUsers() {
+        User authUser = authService.getAuthenticatedUser();
+        if (authUser.getRole().getRole() != Role.PM) {
+            throw new InvalidUserException("Invalid user!");
+        }
+        List<Project> projects = projectRepository.getProjectsByUserId(authUser.getId());
+        return mapToProjectUserDTO(projects);
+    }
+
+    private static ArrayList<ProjectUserDTO> mapToProjectUserDTO(List<Project> projects) {
         ArrayList<ProjectUserDTO> result = new ArrayList<>();
-        for (Project project : all) {
+        for (Project project : projects) {
             List<Long> userIds = project.getTeams().stream()
                     .flatMap(t -> t.getUsers().stream())
                     .map(User::getId).collect(Collectors.toList());
@@ -252,5 +274,54 @@ public class ProjectService {
             result.add(new ProjectUserDTO(project.getId(), project.getTitle(), userIds));
         }
         return result;
+    }
+
+
+    public List<ProjectTeamDTO> getAllProjectsWithTeams() {
+        List<Project> all = this.projectRepository.findAll();
+        return mapToProjectTeamDTO(all);
+    }
+
+    public List<ProjectTeamDTO> getAllPMProjectsWithTeams() {
+        User authUser = authService.getAuthenticatedUser();
+
+        if (authUser.getRole().getRole() != Role.PM) {
+            throw new InvalidUserException("Invalid user!");
+        }
+
+        List<Project> projects = projectRepository.getPMProjectsByUserId(authUser.getId());
+        return mapToProjectTeamDTO(projects);
+    }
+
+    private static ArrayList<ProjectTeamDTO> mapToProjectTeamDTO(List<Project> projects) {
+        ArrayList<ProjectTeamDTO> result = new ArrayList<>();
+        for (Project project : projects) {
+            ArrayList<SimpleTeamDTO> teams = new ArrayList<>();
+            for (Team team : project.getTeams()) {
+                teams.add(new SimpleTeamDTO(team.getId(), team.getName()));
+            }
+
+            result.add(new ProjectTeamDTO(project.getId(), project.getTitle(), teams));
+        }
+        return result;
+    }
+
+    public List<SimpleProjectDTO> getProjects() {
+        User authUser = authService.getAuthenticatedUser();
+        if (authUser.getRole().getRole() != Role.PM) {
+            throw new InvalidUserException("Invalid user!");
+        }
+        return projectRepository
+                .getPMProjectsByUserId(authUser.getId())
+                .stream()
+                .map(this::mapToSimpleProjectDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<PrivateSimpleUserDTO> getAllUsersInProject(long projectId) {
+        Project project = findById(projectId);
+        List<User> users = project.getTeams().stream().flatMap(t -> t.getUsers().stream()).collect(Collectors.toList());
+
+        return users.stream().map(u -> userService.mapToPrivateSimpleUserDTO(u)).collect(Collectors.toList());
     }
 }

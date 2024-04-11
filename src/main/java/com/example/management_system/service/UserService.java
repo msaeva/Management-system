@@ -2,6 +2,7 @@ package com.example.management_system.service;
 
 import com.example.management_system.controller.errors.InvalidUserException;
 import com.example.management_system.controller.errors.UserNotFoundException;
+import com.example.management_system.domain.dto.Pagination;
 import com.example.management_system.domain.dto.user.*;
 import com.example.management_system.domain.entity.User;
 import com.example.management_system.domain.entity.UserRole;
@@ -28,10 +29,10 @@ public class UserService {
         Optional<User> byUsername = userRepository.findByUsername(validation.getUsername());
         Optional<User> byEmail = userRepository.findByEmail(validation.getUsername());
 
-        if (byUsername.isPresent()) {
-            throw new InvalidUserException("Username already exists!");
+        if (byUsername.isPresent() || byEmail.isPresent()) {
+            throw new InvalidUserException("User already exists!");
         }
-        // TODO check by username and email
+
         String encodedPassword = encodePassword(validation.getPassword());
         UserRole role;
         if (validation.getRole() == null || validation.getRole().isEmpty()) {
@@ -113,12 +114,15 @@ public class UserService {
                 user.getRole().getRole().name());
     }
 
-    public List<DetailedUserDTO> getAll() {
-        return userRepository
-                .findAll()
+    public Pagination<DetailedUserDTO> getAll(int page, int size, String sort, String order) {
+        long totalRecords = userRepository.getTotalCount();
+        List<DetailedUserDTO> users = userRepository
+                .findAll(page, size, sort, order)
                 .stream()
                 .map(this::maptoDetailedUserDTO)
                 .collect(Collectors.toList());
+
+        return new Pagination<>(users, totalRecords);
     }
 
     public DetailedUserDTO maptoDetailedUserDTO(User user) {
@@ -130,14 +134,4 @@ public class UserService {
                 user.getRole().getRole().name());
     }
 
-//    public List<PrivateSimpleUserDTO> getAllUsersAndProjectManagers() {
-//        UserRole userRole = userRoleService.findByName(Role.USER.name());
-//        UserRole pmRole = userRoleService.findByName(Role.PM.name());
-//
-//        return userRepository
-//                .findAllByRoleIds(userRole.getId(), pmRole.getId())
-//                .stream()
-//                .map(this::mapToPrivateSimpleUserDTO)
-//                .collect(Collectors.toList());
-//    }
 }

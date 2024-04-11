@@ -36,6 +36,12 @@ public class Task {
     @Column(name = "NUMBER")
     private String number;
 
+    @Column(name = "ESTIMATION_TIME")
+    private Integer estimationTime;
+
+    @Column(name = "PROGRESS")
+    private Integer progress;
+
     @Column(name = "ABBREVIATION")
     private String abbreviation;
 

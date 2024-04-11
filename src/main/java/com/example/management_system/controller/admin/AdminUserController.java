@@ -1,5 +1,7 @@
 package com.example.management_system.controller.admin;
 
+import com.example.management_system.domain.dto.Pagination;
+import com.example.management_system.domain.dto.user.DetailedUserDTO;
 import com.example.management_system.domain.dto.user.RegisterUserValidation;
 import com.example.management_system.domain.dto.user.SimpleUserDTO;
 import com.example.management_system.domain.dto.user.UpdateUserValidation;
@@ -26,8 +28,12 @@ public class AdminUserController {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @RolesAllowed({"ADMIN"})
-    public Response getAll() {
-        return Response.ok(userService.getAll()).build();
+    public Response getAll(@QueryParam("page") int page,
+                           @QueryParam("size") int size,
+                           @QueryParam("sort") String sort,
+                           @QueryParam("order") String order) {
+        Pagination<DetailedUserDTO> pagination = userService.getAll(page, size, sort, order);
+        return Response.ok(pagination).build();
     }
 
 

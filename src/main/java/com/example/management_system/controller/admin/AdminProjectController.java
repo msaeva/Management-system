@@ -131,8 +131,16 @@ public class AdminProjectController {
     @Produces(MediaType.APPLICATION_JSON)
     @GET()
     @Path("/users")
-    public Response getAllDetailed() {
+    public Response getAllProjectsWithUsers() {
         return Response.ok(projectService.getAllProjectsWithUsers()).build();
+    }
+
+    @RolesAllowed("ADMIN")
+    @Produces(MediaType.APPLICATION_JSON)
+    @GET()
+    @Path("/teams")
+    public Response getAllProjectsWithTeams() {
+        return Response.ok(projectService.getAllProjectsWithTeams()).build();
     }
 
 }

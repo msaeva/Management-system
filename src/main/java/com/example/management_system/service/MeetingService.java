@@ -2,19 +2,24 @@ package com.example.management_system.service;
 
 import com.example.management_system.controller.errors.InvalidUserException;
 import com.example.management_system.controller.errors.MeetingNotFoundException;
+import com.example.management_system.domain.dto.meeting.CreateMeetingValidation;
 import com.example.management_system.domain.dto.meeting.PrivateMeetingDTO;
 import com.example.management_system.domain.dto.meeting.PublicMeetingDTO;
 import com.example.management_system.domain.dto.meeting.UpdateMeetingValidation;
 import com.example.management_system.domain.dto.user.PrivateSimpleUserDTO;
 import com.example.management_system.domain.entity.Meeting;
 import com.example.management_system.domain.entity.Project;
+import com.example.management_system.domain.entity.Team;
 import com.example.management_system.domain.entity.User;
+import com.example.management_system.domain.enums.MeetingStatus;
+import com.example.management_system.domain.enums.Role;
 import com.example.management_system.repository.MeetingRepository;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Stateless
@@ -28,6 +33,9 @@ public class MeetingService {
     private ProjectService projectService;
 
     @Inject
+    private TeamService teamService;
+
+    @Inject
     private AuthService authService;
 
     public List<PublicMeetingDTO> getAuthUserMeetings() {
@@ -35,11 +43,18 @@ public class MeetingService {
         if (authUser == null) {
             throw new InvalidUserException("User is not authenticated");
         }
-        return meetingRepository
-                .getByUserId(authUser.getId())
-                .stream()
+        if (authUser.getRole().getRole() == Role.USER) {
+            return meetingRepository
+                    .getByUserId(authUser.getId())
+                    .stream()
+                    .map(this::mapToPublicMeetingDTO)
+                    .collect(Collectors.toList());
+        }
+
+        return meetingRepository.getPMMeetingsById(authUser.getId()).stream()
                 .map(this::mapToPublicMeetingDTO)
                 .collect(Collectors.toList());
+
     }
 
     private PublicMeetingDTO mapToPublicMeetingDTO(Meeting meeting) {
@@ -124,5 +139,23 @@ public class MeetingService {
 
     public boolean delete(Long id) {
         return this.meetingRepository.deleteById(id);
+    }
+
+    public PublicMeetingDTO create(CreateMeetingValidation validation) {
+        Project project = projectService.findById(validation.getProjectId());
+
+        Set<Team> teams = teamService.findByIds(validation.getTeamIds());
+
+        Timestamp start = new Timestamp(validation.getStart());
+        Timestamp end = new Timestamp(validation.getEnd());
+        Meeting meeting = new Meeting(validation.getTitle(),
+                MeetingStatus.NOT_STARTED.name(),
+                start.toLocalDateTime(),
+                end.toLocalDateTime(),
+                project,
+                teams);
+
+        Meeting saved = meetingRepository.save(meeting);
+        return mapToPublicMeetingDTO(saved);
     }
 }

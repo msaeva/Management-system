@@ -8,10 +8,7 @@ import com.example.management_system.domain.dto.task.DetailedTaskDTO;
 import com.example.management_system.domain.dto.task.TaskDTO;
 import com.example.management_system.domain.dto.task.TaskValidation;
 import com.example.management_system.domain.dto.task.UpdateTaskValidation;
-import com.example.management_system.domain.entity.Comment;
-import com.example.management_system.domain.entity.Project;
-import com.example.management_system.domain.entity.Task;
-import com.example.management_system.domain.entity.User;
+import com.example.management_system.domain.entity.*;
 import com.example.management_system.domain.enums.TaskStatus;
 import com.example.management_system.repository.TaskRepository;
 import jakarta.ejb.Stateless;
@@ -41,12 +38,12 @@ public class TaskService {
     public CommentService commentService;
     private static final Logger LOGGER = Logger.getLogger(TaskService.class.getName());
 
-    public DetailedTaskDTO create(TaskValidation validation) {
+    public TaskDTO create(TaskValidation validation) {
 
         Project project = projectService.findById(validation.getProjectId());
         Task task = new Task(validation.getTitle(),
                 validation.getDescription(),
-                TaskStatus.TODO.name(),
+                TaskStatus.OPEN.name(),
                 LocalDateTime.now(),
                 project,
                 project.getAbbreviation() + "-",
@@ -57,7 +54,7 @@ public class TaskService {
 
             if (project.getTeams().stream().anyMatch(team -> team.getUsers().contains(userToAdd))) {
                 task.setUser(userToAdd);
-                task.setStatus(TaskStatus.OPEN.name());
+                task.setStatus(TaskStatus.TODO.name());
             } else {
                 throw new InvalidUserException("User is not in any team of the project.");
             }
@@ -68,19 +65,40 @@ public class TaskService {
         Task savedTask = taskRepository.save(task);
         task.setAbbreviation(project.getAbbreviation() + "-" + savedTask.getId());
         taskRepository.save(savedTask);
-        return mapToDetailedTaskDTO(savedTask);
+        return mapToTaskDTO(savedTask);
     }
 
-    public List<TaskDTO> getTasksByProjectId(long projectId) {
+    public List<TaskDTO> getTasksForUserTeamsByProjectId(long projectId) {
         User authUser = authService.getAuthenticatedUser();
         if (authUser == null) {
             throw new InvalidUserException("User is not authenticated");
         }
-        return taskRepository
-                .getTasksByUserAndProject(authUser.getId(), projectId)
+
+        Project project = projectService.findById(projectId);
+        List<Team> teamsWithAuthUser = project.getTeams().stream()
+                .filter(team -> team.getUsers().stream().anyMatch(u -> u.getId().equals(authUser.getId())))
+                .collect(Collectors.toList());
+
+        List<Long> userIds = teamsWithAuthUser.stream()
+                .flatMap(t -> t.getUsers().stream())
+                .map(User::getId).collect(Collectors.toList());
+
+        List<Task> result = project.getTasks().stream()
+                .filter(task -> {
+                    User taskUser = task.getUser();
+                    return taskUser == null || userIds.contains(taskUser.getId());
+                }).collect(Collectors.toList());
+
+        return result.stream().map(this::mapToTaskDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<TaskDTO> getAllTasksByProjectId(long projectId) {
+        return taskRepository.getAllByProject(projectId)
                 .stream()
                 .map(this::mapToTaskDTO)
                 .collect(Collectors.toList());
+
     }
 
     private DetailedTaskDTO mapToDetailedTaskDTO(Task task) {
@@ -94,15 +112,25 @@ public class TaskService {
     }
 
     private TaskDTO mapToTaskDTO(Task task) {
-        Long assignedUser = task.getUser() != null ? task.getUser().getId() : null;
+        Long userId = null;
+        String userFullName = null;
+
+        if (task.getUser() != null) {
+            userFullName = task.getUser().getFirstName() + " " + task.getUser().getLastName();
+            userId = task.getUser().getId();
+        }
+
         return new TaskDTO(
                 task.getId(),
                 task.getTitle(),
                 task.getDescription(),
                 task.getStatus(),
                 task.getProject().getId(),
-                assignedUser,
-                task.getAbbreviation());
+                userId,
+                userFullName,
+                task.getAbbreviation(),
+                task.getEstimationTime(),
+                task.getProgress());
     }
 
     public String updateStatus(long id, String status) {
@@ -110,8 +138,8 @@ public class TaskService {
         if (optionalTask.isPresent()) {
             Task task = optionalTask.get();
             task.setStatus(TaskStatus.valueOf(status).name());
-            taskRepository.save(task);
-            return task.getStatus();
+            Task updated = taskRepository.save(task);
+            return updated.getStatus();
         } else {
             throw new TaskNotFoundException("Task with id: " + id + " not found!");
         }
@@ -128,7 +156,7 @@ public class TaskService {
                 .orElseThrow(() -> new TaskNotFoundException("Task with id: " + id + " not found!"));
     }
 
-    public void assignUserToTask(long id, long userId) {
+    public TaskDTO assignUserToTask(long id, long userId) {
         User user = userService.findById(userId);
         Task task = findById(id);
 
@@ -137,7 +165,10 @@ public class TaskService {
         }
 
         task.setUser(user);
-        taskRepository.save(task);
+        task.setStatus(TaskStatus.TODO.name());
+        Task updatedTask = taskRepository.save(task);
+
+        return mapToTaskDTO(updatedTask);
     }
 
     public boolean deleteByProjectId(Long id) {
@@ -166,8 +197,8 @@ public class TaskService {
         return taskRepository.deleteById(task.getId());
     }
 
-    public List<DetailedTaskDTO> getAllProjectTasks(Long projectId, int page, int size, String sort, String sortOrder) {
-        return taskRepository.getAllProjectTasks(projectId, page, size, sort, sortOrder)
+    public List<DetailedTaskDTO> getAllProjectTasks(Long projectId, int page, int size, String sort, String order) {
+        return taskRepository.getAllProjectTasks(projectId, page, size, sort, order)
                 .stream()
                 .map(this::mapToDetailedTaskDTO)
                 .collect(Collectors.toList());
@@ -175,5 +206,25 @@ public class TaskService {
 
     public long getTasksCountByProjectId(Long projectId) {
         return taskRepository.getTaskCountByProjectId(projectId);
+    }
+
+    public TaskDTO setEstimationTime(Long id, Integer estimationTime) {
+        Task task = findById(id);
+        if (estimationTime >= 1) {
+            task.setEstimationTime(estimationTime);
+        } else {
+            throw new InvalidTaskException("Estimation time is invalid!");
+        }
+        Task updated = taskRepository.save(task);
+        return mapToTaskDTO(updated);
+    }
+
+    public TaskDTO changeProgress(Long id, Integer progress) {
+        Task task = findById(id);
+        if (progress >= 0 && progress <= 100) {
+            task.setProgress(progress);
+        }
+        Task saved = taskRepository.save(task);
+        return mapToTaskDTO(saved);
     }
 }
