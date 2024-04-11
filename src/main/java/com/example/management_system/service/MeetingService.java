@@ -12,6 +12,7 @@ import com.example.management_system.domain.entity.Project;
 import com.example.management_system.domain.entity.Team;
 import com.example.management_system.domain.entity.User;
 import com.example.management_system.domain.enums.MeetingStatus;
+import com.example.management_system.domain.enums.Role;
 import com.example.management_system.repository.MeetingRepository;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
@@ -42,11 +43,18 @@ public class MeetingService {
         if (authUser == null) {
             throw new InvalidUserException("User is not authenticated");
         }
-        return meetingRepository
-                .getByUserId(authUser.getId())
-                .stream()
+        if (authUser.getRole().getRole() == Role.USER) {
+            return meetingRepository
+                    .getByUserId(authUser.getId())
+                    .stream()
+                    .map(this::mapToPublicMeetingDTO)
+                    .collect(Collectors.toList());
+        }
+
+        return meetingRepository.getPMMeetingsById(authUser.getId()).stream()
                 .map(this::mapToPublicMeetingDTO)
                 .collect(Collectors.toList());
+
     }
 
     private PublicMeetingDTO mapToPublicMeetingDTO(Meeting meeting) {

@@ -6,6 +6,7 @@ import com.example.management_system.domain.entity.User;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Join;
@@ -33,7 +34,7 @@ public class ProjectRepository {
 
     public Optional<Project> findById(Long id) {
         Project project = entityManager.find(Project.class, id);
-        if (project == null){
+        if (project == null) {
             return Optional.empty();
         }
         return Optional.of(project);
@@ -66,5 +67,16 @@ public class ProjectRepository {
                 .setParameter("id", id)
                 .executeUpdate();
         return deletedCount > 0;
+    }
+
+    public List<Project> getPMProjectsByUserId(Long id) {
+        String jpql = "select p from Project p " +
+                "join PMProject pm on pm.project.id = p.id " +
+                "where pm.user.id = :id";
+
+        TypedQuery<Project> query = entityManager.createQuery(jpql, Project.class);
+        query.setParameter("id", id);
+
+        return query.getResultList();
     }
 }

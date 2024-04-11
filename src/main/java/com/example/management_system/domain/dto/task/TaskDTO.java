@@ -14,5 +14,8 @@ public class TaskDTO {
     private String status;
     private Long projectId;
     private Long userId;
+    private String userFullName;
     private String abbreviation;
+    private Integer estimationTime;
+    private Integer progress;
 }

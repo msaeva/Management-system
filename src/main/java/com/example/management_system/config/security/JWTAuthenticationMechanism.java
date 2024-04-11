@@ -1,6 +1,5 @@
 package com.example.management_system.config.security;
 
-import com.example.management_system.controller.UserController;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -13,15 +12,12 @@ import jakarta.security.enterprise.identitystore.IdentityStoreHandler;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import java.util.logging.Logger;
-
 @ApplicationScoped
 public class JWTAuthenticationMechanism implements HttpAuthenticationMechanism {
     private static final String AUTHORIZATION_HEADER = "Authorization";
     @Inject
     private IdentityStoreHandler identityStoreHandler;
 
-    private static final Logger LOGGER = Logger.getLogger(UserController.class.getName());
     @Inject
     private JwtUtil jwtUtil;
 
@@ -42,9 +38,7 @@ public class JWTAuthenticationMechanism implements HttpAuthenticationMechanism {
             }
             return context.responseUnauthorized();
         } else if (token != null) {
-            AuthenticationStatus validatedToken = validateToken(token, context);
-            LOGGER.info(validatedToken.toString());
-            return validatedToken;
+            return validateToken(token, context);
         } else if (context.isProtected()) {
             return context.responseUnauthorized();
         }
@@ -56,12 +50,11 @@ public class JWTAuthenticationMechanism implements HttpAuthenticationMechanism {
         try {
             if (jwtUtil.validateToken(token)) {
                 UserPrincipal userPrincipal = jwtUtil.getUserDetails(token);
-                return context.notifyContainerAboutLogin(userPrincipal.getPrincipal(), userPrincipal.getAuthorities());
+                return context.notifyContainerAboutLogin(userPrincipal.getUsername(), userPrincipal.getAuthorities());
             }
             addCorsHeaders(context.getResponse());
             return context.responseUnauthorized();
         } catch (ExpiredJwtException e) {
-            LOGGER.info("in catch block ");
             return context.responseUnauthorized();
         }
     }

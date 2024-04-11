@@ -1,6 +1,6 @@
 package com.example.management_system.controller.admin;
 
-import com.example.management_system.domain.dto.task.DetailedTaskDTO;
+import com.example.management_system.domain.dto.task.TaskDTO;
 import com.example.management_system.domain.dto.task.TaskValidation;
 import com.example.management_system.domain.dto.task.UpdateTaskValidation;
 import com.example.management_system.service.TaskService;
@@ -40,7 +40,7 @@ public class AdminTaskController {
     @POST()
     @RolesAllowed({"ADMIN"})
     public Response create(TaskValidation validation) {
-        DetailedTaskDTO taskDTO = taskService.create(validation);
+        TaskDTO taskDTO = taskService.create(validation);
         return Response.ok(taskDTO).build();
     }
 }

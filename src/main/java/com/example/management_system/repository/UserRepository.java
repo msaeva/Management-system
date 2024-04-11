@@ -2,17 +2,15 @@ package com.example.management_system.repository;
 
 import com.example.management_system.domain.entity.User;
 import jakarta.ejb.Stateless;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.NoResultException;
-import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.TypedQuery;
+import jakarta.persistence.*;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Logger;
 
 @Stateless
 public class UserRepository {
-
+    private static final Logger LOGGER = Logger.getLogger(UserRepository.class.getName());
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -78,6 +76,21 @@ public class UserRepository {
                 .getResultList();
     }
 
+    public List<User> findAll(int page, int size, String sort, String order) {
+        String jpql = "SELECT u FROM User u ORDER BY u." + sort + " " + order;
+
+        LOGGER.info("query " + jpql);
+        LOGGER.info("page " + page);
+        LOGGER.info("sort " + sort);
+        LOGGER.info("sort " + sort);
+        LOGGER.info("order " + order);
+
+        TypedQuery<User> query = entityManager.createQuery(jpql, User.class);
+        query.setFirstResult((page - 1) * size); // offset
+        query.setMaxResults(size); // limit
+        return query.getResultList();
+    }
+
     public boolean deleteById(Long id) {
         String jpql = "DELETE FROM User u WHERE u.id = :id";
         int deletedCount = entityManager.createQuery(jpql)
@@ -93,4 +106,11 @@ public class UserRepository {
 
         return query.getResultList();
     }
+
+    public long getTotalCount() {
+        String jpql = "select count(t) from User t";
+        Query query = entityManager.createQuery(jpql);
+        return (Long) query.getSingleResult();
+    }
+
 }
