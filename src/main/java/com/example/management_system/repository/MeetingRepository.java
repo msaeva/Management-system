@@ -114,4 +114,12 @@ public class MeetingRepository {
 
         return query.getResultList();
     }
+
+    public boolean deleteByProject(Long id) {
+        String jpql = "DELETE FROM Meeting m WHERE m.project.id = :id";
+        int deletedCount = entityManager.createQuery(jpql)
+                .setParameter("id", id)
+                .executeUpdate();
+        return deletedCount >= 0;
+    }
 }

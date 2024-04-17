@@ -8,11 +8,11 @@ import lombok.Setter;
 import java.util.List;
 
 @Getter
-@Setter @AllArgsConstructor
+@Setter
+@AllArgsConstructor
 public class PrivateMeetingDTO {
     private Long id;
     private String title;
-    private String status;
     private Long start;
     private Long end;
     private List<PrivateSimpleUserDTO> users;

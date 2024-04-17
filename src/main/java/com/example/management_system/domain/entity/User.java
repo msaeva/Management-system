@@ -35,6 +35,9 @@ public class User implements Serializable {
     @Column(name = "PASSWORD")
     private String password;
 
+    @Column(name = "DELETED")
+    private boolean deleted;
+
     @ManyToOne
     @JoinColumn(name = "ROLE_ID", referencedColumnName = "ID")
     private UserRole role;
@@ -46,12 +49,14 @@ public class User implements Serializable {
             inverseJoinColumns = @JoinColumn(name = "TEAM_ID")
     )
     private Set<Team> teams = new HashSet<>();
-    public User(String username, String firstName, String lastName, String email, String password, UserRole role) {
+
+    public User(String username, String firstName, String lastName, String email, String password, UserRole role, boolean deleted) {
         this.username = username;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.password = password;
         this.role = role;
+        this.deleted = deleted;
     }
 }

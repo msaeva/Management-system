@@ -11,4 +11,5 @@ public class UpdateTaskValidation {
     private String abbreviation;
     private String description;
     private String status;
+    private Long userId;
 }

@@ -11,7 +11,6 @@ import com.example.management_system.domain.entity.Meeting;
 import com.example.management_system.domain.entity.Project;
 import com.example.management_system.domain.entity.Team;
 import com.example.management_system.domain.entity.User;
-import com.example.management_system.domain.enums.MeetingStatus;
 import com.example.management_system.domain.enums.Role;
 import com.example.management_system.repository.MeetingRepository;
 import jakarta.ejb.Stateless;
@@ -60,7 +59,6 @@ public class MeetingService {
     private PublicMeetingDTO mapToPublicMeetingDTO(Meeting meeting) {
         return new PublicMeetingDTO(meeting.getId(),
                 meeting.getTitle(),
-                meeting.getStatus(),
                 Timestamp.valueOf(meeting.getStartDate()).getTime(),
                 Timestamp.valueOf(meeting.getEndDate()).getTime()
         );
@@ -105,7 +103,6 @@ public class MeetingService {
 
         return new PrivateMeetingDTO(meeting.getId(),
                 meeting.getTitle(),
-                meeting.getStatus(),
                 Timestamp.valueOf(meeting.getStartDate()).getTime(),
                 Timestamp.valueOf(meeting.getEndDate()).getTime(),
                 users
@@ -149,7 +146,6 @@ public class MeetingService {
         Timestamp start = new Timestamp(validation.getStart());
         Timestamp end = new Timestamp(validation.getEnd());
         Meeting meeting = new Meeting(validation.getTitle(),
-                MeetingStatus.NOT_STARTED.name(),
                 start.toLocalDateTime(),
                 end.toLocalDateTime(),
                 project,
@@ -157,5 +153,9 @@ public class MeetingService {
 
         Meeting saved = meetingRepository.save(meeting);
         return mapToPublicMeetingDTO(saved);
+    }
+
+    public boolean deleteByProjectId(Long id) {
+        return meetingRepository.deleteByProject(id);
     }
 }

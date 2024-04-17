@@ -42,6 +42,8 @@ public class ProjectService {
 
     @Inject
     public UserService userService;
+    @Inject
+    public MeetingService meetingService;
 
     public PrivateProjectDTO create(ProjectValidation validation) {
         Set<User> pms = new HashSet<>();
@@ -146,8 +148,14 @@ public class ProjectService {
 
     public boolean deleteById(Long id) {
         Project project = findById(id);
-        taskService.deleteByProjectId(project.getId());
-        return projectRepository.delete(project.getId());
+
+        boolean isDeletedTasks = taskService.deleteByProjectId(project.getId());
+        boolean isDeletedMeetings = meetingService.deleteByProjectId(project.getId());
+
+        if (isDeletedTasks && isDeletedMeetings) {
+            return projectRepository.delete(project.getId());
+        }
+        return false;
     }
 
     public boolean deleteTeamFromProject(Long teamId, Long projectId) {
@@ -323,5 +331,11 @@ public class ProjectService {
         List<User> users = project.getTeams().stream().flatMap(t -> t.getUsers().stream()).collect(Collectors.toList());
 
         return users.stream().map(u -> userService.mapToPrivateSimpleUserDTO(u)).collect(Collectors.toList());
+    }
+
+    public List<DetailedProjectDTO> getProjectsByUserId(Long id) {
+        return projectRepository.getProjectsByUserId(id)
+                .stream()
+                .map(this::mapToDetailedProjectDTO).collect(Collectors.toList());
     }
 }

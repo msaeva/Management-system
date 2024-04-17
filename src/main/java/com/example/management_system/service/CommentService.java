@@ -9,6 +9,7 @@ import com.example.management_system.domain.entity.Comment;
 import com.example.management_system.domain.entity.Project;
 import com.example.management_system.domain.entity.Task;
 import com.example.management_system.domain.entity.User;
+import com.example.management_system.domain.enums.Role;
 import com.example.management_system.repository.CommentRepository;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
@@ -30,11 +31,19 @@ public class CommentService {
         Task task = taskService.findById(validation.getTaskID());
         Project project = task.getProject();
 
-        boolean userIsMember = project.getTeams().stream()
-                .anyMatch(team -> team.getUsers().contains(authUser));
+        if (authUser.getRole().getRole() == Role.USER) {
+            boolean userIsMember = project.getTeams().stream()
+                    .anyMatch(team -> team.getUsers().contains(authUser));
 
-        if (!userIsMember) {
-            throw new InvalidUserException("User is not authorized to post a comment in this task.");
+            if (!userIsMember) {
+                throw new InvalidUserException("User is not authorized to post a comment in this task.");
+            }
+        } else if (authUser.getRole().getRole() == Role.PM) {
+            boolean isAuthUserPM = project.getPms().stream().anyMatch(u -> Objects.equals(u.getId(), authUser.getId()));
+
+            if (!isAuthUserPM) {
+                throw new InvalidUserException("User is not authorized to post a comment in this task.");
+            }
         }
 
         Comment comment = new Comment();
@@ -45,14 +54,19 @@ public class CommentService {
 
         Comment saved = commentRepository.save(comment);
 
+        return mapToCommentToDTO(saved, authUser, task);
+    }
+
+    public CommentDTO mapToCommentToDTO(Comment comment, User authUser, Task task) {
         return new CommentDTO(
-                saved.getId(),
-                saved.getComment(),
+                comment.getId(),
+                comment.getComment(),
                 authUser.getFirstName() + " " + authUser.getLastName(),
-                saved.getAuthor().getId(),
-                saved.getCreatedDate().toString(),
+                authUser.getId(),
+                comment.getCreatedDate().toString(),
                 task.getId());
     }
+
 
     public Comment findById(Long id) {
         return commentRepository
@@ -101,5 +115,9 @@ public class CommentService {
                 comment.getAuthor().getId(),
                 comment.getCreatedDate(),
                 comment.getTask().getId());
+    }
+
+    public boolean deleteCommentsByTaskId(Long id) {
+        return commentRepository.deleteByTaskId(id);
     }
 }

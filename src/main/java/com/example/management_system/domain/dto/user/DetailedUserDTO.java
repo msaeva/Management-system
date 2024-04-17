@@ -1,8 +1,11 @@
 package com.example.management_system.domain.dto.user;
 
+import com.example.management_system.domain.dto.project.DetailedProjectDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -14,4 +17,5 @@ public class DetailedUserDTO {
     private String lastName;
     private String email;
     private String role;
+    private List<DetailedProjectDTO> projects;
 }

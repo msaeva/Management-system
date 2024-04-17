@@ -21,7 +21,7 @@ public class CommentController {
         return Response.ok(comment).build();
     }
 
-    @RolesAllowed({"USER"})
+    @RolesAllowed({"USER", "PM"})
     @Produces("application/json")
     @Path("/{id}")
     @DELETE
@@ -32,7 +32,7 @@ public class CommentController {
         return Response.status(Response.Status.BAD_REQUEST).build();
     }
 
-    @RolesAllowed({"USER"})
+    @RolesAllowed({"USER", "PM"})
     @Produces("application/json")
     @Path("/{id}")
     @PUT

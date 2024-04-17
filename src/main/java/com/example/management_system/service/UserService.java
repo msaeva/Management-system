@@ -3,7 +3,9 @@ package com.example.management_system.service;
 import com.example.management_system.controller.errors.InvalidUserException;
 import com.example.management_system.controller.errors.UserNotFoundException;
 import com.example.management_system.domain.dto.Pagination;
+import com.example.management_system.domain.dto.project.DetailedProjectDTO;
 import com.example.management_system.domain.dto.user.*;
+import com.example.management_system.domain.entity.Project;
 import com.example.management_system.domain.entity.User;
 import com.example.management_system.domain.entity.UserRole;
 import com.example.management_system.repository.UserRepository;
@@ -22,6 +24,12 @@ public class UserService {
 
     @Inject
     private UserRoleService userRoleService;
+
+    @Inject
+    private ProjectService projectService;
+
+    @Inject
+    private AuthService authService;
 
     @Transactional
     public SimpleUserDTO create(RegisterUserValidation validation) {
@@ -46,14 +54,21 @@ public class UserService {
                 validation.getLastName(),
                 validation.getEmail(),
                 encodedPassword,
-                role);
+                role,
+                false);
 
         User saved = userRepository.save(user);
         return mapToSimpleUserDTO(saved);
     }
 
     public boolean deleteById(Long id) {
-        return userRepository.deleteById(id);
+        User user = findById(id);
+        if (user != null) {
+            user.setDeleted(true);
+            userRepository.save(user);
+            return true;
+        }
+        return false;
     }
 
     public void update(UpdateUserValidation validation) {
@@ -115,23 +130,67 @@ public class UserService {
     }
 
     public Pagination<DetailedUserDTO> getAll(int page, int size, String sort, String order) {
-        long totalRecords = userRepository.getTotalCount();
-        List<DetailedUserDTO> users = userRepository
-                .findAll(page, size, sort, order)
-                .stream()
-                .map(this::maptoDetailedUserDTO)
-                .collect(Collectors.toList());
+        List<User> users = new ArrayList<>(userRepository
+                .findAll(page, size, sort, order));
 
-        return new Pagination<>(users, totalRecords);
+        List<DetailedUserDTO> result = new ArrayList<>();
+        for (User user : users) {
+            List<DetailedProjectDTO> projects = projectService.getProjectsByUserId(user.getId());
+            result.add(maptoDetailedUserDTO(user, projects));
+
+        }
+
+        long totalRecords = userRepository.getTotalCount();
+        return new Pagination<>(result, totalRecords);
     }
 
-    public DetailedUserDTO maptoDetailedUserDTO(User user) {
+    public DetailedUserDTO maptoDetailedUserDTO(User user, List<DetailedProjectDTO> projects) {
         return new DetailedUserDTO(user.getId(),
                 user.getUsername(),
                 user.getFirstName(),
                 user.getLastName(),
                 user.getEmail(),
-                user.getRole().getRole().name());
+                user.getRole().getRole().name(),
+                projects);
     }
 
+    public DetailedUserDTO getUserProfile() {
+        User authUser = authService.getAuthenticatedUser();
+
+        if (authUser == null) {
+            throw new InvalidUserException("User is not authenticated");
+        }
+
+        User user = findById(authUser.getId());
+        return maptoDetailedUserDTO(user, null);
+    }
+
+    public boolean changePassword(ChangePasswordValidation validation) {
+        User authUser = authService.getAuthenticatedUser();
+        if (authUser == null) {
+            throw new InvalidUserException("User is not authenticated");
+        }
+
+        if (!checkPassword(validation.getOldPassword(), authUser.getPassword())) {
+            throw new InvalidUserException("Invalid password");
+        }
+
+        String encodedPassword = encodePassword(validation.getNewPassword());
+        authUser.setPassword(encodedPassword);
+        userRepository.save(authUser);
+
+        return true;
+    }
+
+    public DetailedUserDTO updateUser(UpdateUserValidation validation) {
+        User authUser = authService.getAuthenticatedUser();
+        if (authUser == null) {
+            throw new InvalidUserException("User is not authenticated");
+        }
+
+        authUser.setFirstName(validation.getFirstName());
+        authUser.setLastName(validation.getLastName());
+        User saved = userRepository.save(authUser);
+        return maptoDetailedUserDTO(saved, null);
+    }
 }
