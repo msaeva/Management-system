@@ -79,10 +79,15 @@ public class UserRepository {
     }
 
     public List<User> findAll(int page, int size, String sort, String order) {
-        String jpql = "SELECT u FROM User u where u.deleted = false ORDER BY u." + sort + " " + order;
+        String jpql;
 
-        if (sort.equals("role")){
-            jpql = "SELECT u FROM User u JOIN u.role r WHERE u.deleted = false ORDER BY r.role "  + order;
+        if (sort.equals("role")) {
+            jpql = "SELECT u FROM User u JOIN u.role r WHERE u.deleted = false ORDER BY r.role " + order;
+        } else if (sort.equals("projects")) {
+            jpql = "SELECT DISTINCT u FROM User u LEFT JOIN u.teams t left join t.projects p " +
+                    "WHERE u.deleted = false ORDER BY p.title " + order;
+        } else {
+            jpql = "SELECT u FROM User u where u.deleted = false ORDER BY u." + sort + " " + order;
         }
 
         TypedQuery<User> query = entityManager.createQuery(jpql, User.class);

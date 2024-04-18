@@ -22,8 +22,8 @@ public class TaskController {
     @PUT
     @RolesAllowed({"PM", "USER"})
     public Response update(@PathParam("taskId") long taskId, String status) {
-        String updateStatus = taskService.updateStatus(taskId, status);
-        return Response.ok(updateStatus).build();
+        TaskDTO updated = taskService.updateStatus(taskId, status);
+        return Response.ok(updated).build();
     }
 
     @Produces(MediaType.APPLICATION_JSON)
@@ -39,7 +39,7 @@ public class TaskController {
     @Path("/{id}/estimation-time")
     @PUT
     @RolesAllowed({"USER"})
-    public Response setEstimationTime(@PathParam("id")Long id, Integer estimationTime) {
+    public Response setEstimationTime(@PathParam("id") Long id, Integer estimationTime) {
         TaskDTO taskDTO = taskService.setEstimationTime(id, estimationTime);
         return Response.ok(taskDTO).build();
     }
@@ -48,7 +48,7 @@ public class TaskController {
     @Path("/{id}/progress")
     @PUT
     @RolesAllowed({"USER"})
-    public Response changeProgress(@PathParam("id")Long id, Integer progress) {
+    public Response changeProgress(@PathParam("id") Long id, Integer progress) {
         TaskDTO taskDTO = taskService.changeProgress(id, progress);
         return Response.ok(taskDTO).build();
     }

@@ -135,13 +135,22 @@ public class TaskService {
                 task.getProgress());
     }
 
-    public String updateStatus(long id, String status) {
+    public TaskDTO updateStatus(long id, String status) {
         Optional<Task> optionalTask = taskRepository.findById(id);
         if (optionalTask.isPresent()) {
             Task task = optionalTask.get();
-            task.setStatus(TaskStatus.valueOf(status).name());
+
+            if (TaskStatus.valueOf(status) == TaskStatus.OPEN) {
+                task.setStatus(TaskStatus.RE_OPEN.name());
+                task.setEstimationTime(null);
+                task.setProgress(null);
+                task.setUser(null);
+            } else {
+                task.setStatus(TaskStatus.valueOf(status).name());
+            }
+
             Task updated = taskRepository.save(task);
-            return updated.getStatus();
+            return mapToTaskDTO(updated);
         } else {
             throw new TaskNotFoundException("Task with id: " + id + " not found!");
         }
