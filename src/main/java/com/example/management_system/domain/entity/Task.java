@@ -53,7 +53,7 @@ public class Task {
     @JoinColumn(name = "PROJECT_ID", referencedColumnName = "ID")
     private Project project;
 
-    @OneToMany(mappedBy = "task", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "task", cascade = CascadeType.ALL,  orphanRemoval = true)
     private Set<Comment> comments;
 
     public Task(String title,

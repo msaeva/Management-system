@@ -10,7 +10,6 @@ import lombok.Setter;
 public class PublicMeetingDTO {
     private Long id;
     private String title;
-    private String status;
     private Long start;
     private Long end;
 }

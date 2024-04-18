@@ -46,7 +46,7 @@ public class TaskRepository {
         int deletedCount = entityManager.createQuery(jpql)
                 .setParameter("id", id)
                 .executeUpdate();
-        return deletedCount > 0;
+        return deletedCount >= 0;
     }
 
     public boolean deleteById(Long id) {
@@ -61,7 +61,7 @@ public class TaskRepository {
         String queryString = "SELECT t FROM Task t WHERE t.project.id = :projectId ORDER BY t." + sort + " " + order;
         Query query = entityManager.createQuery(queryString);
         query.setParameter("projectId", projectId);
-        query.setFirstResult(page * size);
+        query.setFirstResult((page - 1) * size);
         query.setMaxResults(size);
         return query.getResultList();
     }

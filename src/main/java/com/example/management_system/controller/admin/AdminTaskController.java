@@ -17,11 +17,13 @@ public class AdminTaskController {
     private TaskService taskService;
 
     @PUT
+    @Path("/{id}")
+    @RolesAllowed({"ADMIN"})
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response update(UpdateTaskValidation validation) {
-        taskService.update(validation);
-        return Response.ok().build();
+    public Response update(@PathParam("id") long id, UpdateTaskValidation validation) {
+        TaskDTO updated = taskService.update(id, validation);
+        return Response.ok(updated).build();
     }
 
 

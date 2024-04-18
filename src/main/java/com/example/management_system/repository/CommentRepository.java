@@ -40,4 +40,12 @@ public class CommentRepository {
         Comment project = entityManager.find(Comment.class, id);
         return Optional.ofNullable(project);
     }
+
+    public boolean deleteByTaskId(Long id) {
+        String jpql = "DELETE FROM Comment c WHERE c.task.id = :id";
+        int deletedCount = entityManager.createQuery(jpql)
+                .setParameter("id", id)
+                .executeUpdate();
+        return deletedCount > 0;
+    }
 }

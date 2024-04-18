@@ -9,6 +9,7 @@ import com.example.management_system.domain.dto.task.TaskDTO;
 import com.example.management_system.domain.dto.task.TaskValidation;
 import com.example.management_system.domain.dto.task.UpdateTaskValidation;
 import com.example.management_system.domain.entity.*;
+import com.example.management_system.domain.enums.Role;
 import com.example.management_system.domain.enums.TaskStatus;
 import com.example.management_system.repository.TaskRepository;
 import jakarta.ejb.Stateless;
@@ -61,11 +62,11 @@ public class TaskService {
         } else {
             task.setUser(null);
         }
-
         Task savedTask = taskRepository.save(task);
         task.setAbbreviation(project.getAbbreviation() + "-" + savedTask.getId());
-        taskRepository.save(savedTask);
-        return mapToTaskDTO(savedTask);
+        Task updated = taskRepository.save(savedTask);
+
+        return mapToTaskDTO(updated);
     }
 
     public List<TaskDTO> getTasksForUserTeamsByProjectId(long projectId) {
@@ -130,16 +131,26 @@ public class TaskService {
                 userFullName,
                 task.getAbbreviation(),
                 task.getEstimationTime(),
+                task.getCreatedDate(),
                 task.getProgress());
     }
 
-    public String updateStatus(long id, String status) {
+    public TaskDTO updateStatus(long id, String status) {
         Optional<Task> optionalTask = taskRepository.findById(id);
         if (optionalTask.isPresent()) {
             Task task = optionalTask.get();
-            task.setStatus(TaskStatus.valueOf(status).name());
+
+            if (TaskStatus.valueOf(status) == TaskStatus.OPEN) {
+                task.setStatus(TaskStatus.RE_OPEN.name());
+                task.setEstimationTime(null);
+                task.setProgress(null);
+                task.setUser(null);
+            } else {
+                task.setStatus(TaskStatus.valueOf(status).name());
+            }
+
             Task updated = taskRepository.save(task);
-            return updated.getStatus();
+            return mapToTaskDTO(updated);
         } else {
             throw new TaskNotFoundException("Task with id: " + id + " not found!");
         }
@@ -183,18 +194,27 @@ public class TaskService {
                 .stream().map(c -> commentService.toPublicCommentDTO(c)).collect(Collectors.toList());
     }
 
-    public void update(UpdateTaskValidation validation) {
-        Task task = findById(validation.getId());
+    public TaskDTO update(Long id, UpdateTaskValidation validation) {
+        Task task = findById(id);
+
+        if (validation.getUserId() != null) {
+            User user = userService.findById(validation.getUserId());
+            task.setUser(user);
+        }
         task.setStatus(TaskStatus.valueOf(validation.getStatus()).name());
         task.setDescription(validation.getDescription());
         task.setTitle(validation.getTitle());
         task.setAbbreviation(validation.getAbbreviation());
-        taskRepository.save(task);
+        Task saved = taskRepository.save(task);
+        return mapToTaskDTO(saved);
     }
 
     public boolean deleteById(Long id) {
         Task task = findById(id);
-        return taskRepository.deleteById(task.getId());
+        if (commentService.deleteCommentsByTaskId(task.getId())) {
+            return taskRepository.deleteById(task.getId());
+        }
+        return false;
     }
 
     public List<DetailedTaskDTO> getAllProjectTasks(Long projectId, int page, int size, String sort, String order) {

@@ -32,7 +32,7 @@ public class UserRepository {
             return List.of();
         }
 
-        String jpql = "SELECT u FROM User u WHERE u.id IN :userIds";
+        String jpql = "SELECT u FROM User u WHERE u.id IN :userIds and u.deleted = false";
         TypedQuery<User> query = entityManager.createQuery(jpql, User.class);
         query.setParameter("userIds", userIds);
 
@@ -43,14 +43,16 @@ public class UserRepository {
         if (id == null) {
             return Optional.empty();
         }
-        User user = entityManager.find(User.class, id);
-        return Optional.ofNullable(user);
+        String jpql = "SELECT u FROM User u WHERE u.id = :id and u.deleted = false";
+        TypedQuery<User> query = entityManager.createQuery(jpql, User.class);
+        query.setParameter("id", id);
+        return Optional.ofNullable(query.getSingleResult());
     }
 
     public Optional<User> findByUsername(String username) {
         try {
             TypedQuery<User> query = entityManager.createQuery(
-                    "SELECT u FROM User u WHERE u.username = :username", User.class);
+                    "SELECT u FROM User u WHERE u.username = :username and u.deleted = false", User.class);
             query.setParameter("username", username);
             User user = query.getSingleResult();
             return Optional.of(user);
@@ -62,7 +64,7 @@ public class UserRepository {
     public Optional<User> findByEmail(String email) {
         try {
             TypedQuery<User> query = entityManager.createQuery(
-                    "SELECT u FROM User u WHERE u.email = :email", User.class);
+                    "SELECT u FROM User u WHERE u.email = :email and u.deleted = false", User.class);
             query.setParameter("email", email);
             User user = query.getSingleResult();
             return Optional.of(user);
@@ -72,22 +74,25 @@ public class UserRepository {
     }
 
     public List<User> findAll() {
-        return entityManager.createQuery("SELECT u FROM User u", User.class)
+        return entityManager.createQuery("SELECT u FROM User u where u.deleted = false", User.class)
                 .getResultList();
     }
 
     public List<User> findAll(int page, int size, String sort, String order) {
-        String jpql = "SELECT u FROM User u ORDER BY u." + sort + " " + order;
+        String jpql;
 
-        LOGGER.info("query " + jpql);
-        LOGGER.info("page " + page);
-        LOGGER.info("sort " + sort);
-        LOGGER.info("sort " + sort);
-        LOGGER.info("order " + order);
+        if (sort.equals("role")) {
+            jpql = "SELECT u FROM User u JOIN u.role r WHERE u.deleted = false ORDER BY r.role " + order;
+        } else if (sort.equals("projects")) {
+            jpql = "SELECT DISTINCT u FROM User u LEFT JOIN u.teams t left join t.projects p " +
+                    "WHERE u.deleted = false ORDER BY p.title " + order;
+        } else {
+            jpql = "SELECT u FROM User u where u.deleted = false ORDER BY u." + sort + " " + order;
+        }
 
         TypedQuery<User> query = entityManager.createQuery(jpql, User.class);
-        query.setFirstResult((page - 1) * size); // offset
-        query.setMaxResults(size); // limit
+        query.setFirstResult((page - 1) * size);
+        query.setMaxResults(size);
         return query.getResultList();
     }
 
@@ -100,7 +105,7 @@ public class UserRepository {
     }
 
     public List<User> findAllByRoleIds(List<Long> roleIds) {
-        String jpql = "SELECT u FROM User u WHERE u.role.id IN :ids";
+        String jpql = "SELECT u FROM User u WHERE u.role.id  IN :ids and u.deleted = false";
         TypedQuery<User> query = entityManager.createQuery(jpql, User.class);
         query.setParameter("ids", roleIds);
 
@@ -108,7 +113,7 @@ public class UserRepository {
     }
 
     public long getTotalCount() {
-        String jpql = "select count(t) from User t";
+        String jpql = "select count(u) from User u where u.deleted = false";
         Query query = entityManager.createQuery(jpql);
         return (Long) query.getSingleResult();
     }

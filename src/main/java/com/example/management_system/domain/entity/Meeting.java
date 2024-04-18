@@ -9,7 +9,8 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
-@Getter @Setter
+@Getter
+@Setter
 @RequiredArgsConstructor
 @Entity
 @Table(name = "MEETINGS")
@@ -23,9 +24,6 @@ public class Meeting {
 
     @Column(name = "TITLE")
     private String title;
-
-    @Column(name = "STATUS")
-    private String status;
 
     @Column(name = "START_DATE")
     private LocalDateTime startDate;
@@ -45,9 +43,8 @@ public class Meeting {
     )
     private Set<Team> teams = new HashSet<>();
 
-    public Meeting(String title, String status, LocalDateTime startDate, LocalDateTime endDate, Project project, Set<Team> teams) {
+    public Meeting(String title, LocalDateTime startDate, LocalDateTime endDate, Project project, Set<Team> teams) {
         this.title = title;
-        this.status = status;
         this.startDate = startDate;
         this.endDate = endDate;
         this.project = project;

@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -17,5 +19,6 @@ public class TaskDTO {
     private String userFullName;
     private String abbreviation;
     private Integer estimationTime;
+    private LocalDateTime createdDate;
     private Integer progress;
 }
