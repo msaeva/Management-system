@@ -1,9 +1,6 @@
 package com.example.management_system.repository;
 
-import com.example.management_system.domain.entity.Meeting;
-import com.example.management_system.domain.entity.Project;
-import com.example.management_system.domain.entity.Team;
-import com.example.management_system.domain.entity.User;
+import com.example.management_system.domain.entity.*;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -23,11 +20,14 @@ public class MeetingRepository {
 
 
     public Optional<Meeting> findById(Long id) {
+
         if (id == null) {
             return Optional.empty();
         }
-        Meeting meeting = entityManager.find(Meeting.class, id);
-        return Optional.ofNullable(meeting);
+        String jpql = "SELECT m FROM Meeting m WHERE m.id = :id and m.deleted = false";
+        TypedQuery<Meeting> query = entityManager.createQuery(jpql, Meeting.class);
+        query.setParameter("id", id);
+        return Optional.ofNullable(query.getSingleResult());
     }
 
     public Meeting save(Meeting meeting) {
@@ -53,6 +53,7 @@ public class MeetingRepository {
 
         query.select(meetingRoot).distinct(true);
         query.where(
+                criteriaBuilder.equal(meetingRoot.get("deleted"), false),
                 criteriaBuilder.equal(projectJoin.get("id"), projectId),
                 criteriaBuilder.equal(usersJoin.get("id"), userId)
         );
@@ -69,6 +70,7 @@ public class MeetingRepository {
 
         query.select(meetingRoot).distinct(true);
         query.where(
+                criteriaBuilder.equal(meetingRoot.get("deleted"), false),
                 criteriaBuilder.equal(projectJoin.get("id"), projectId)
         );
 
@@ -76,13 +78,13 @@ public class MeetingRepository {
     }
 
     public List<Meeting> getAll() {
-        String jpql = "SELECT m FROM Meeting m";
+        String jpql = "SELECT m FROM Meeting m where m.deleted = false ";
         TypedQuery<Meeting> query = entityManager.createQuery(jpql, Meeting.class);
         return query.getResultList();
     }
 
     public boolean deleteById(Long id) {
-        String jpql = "DELETE FROM Meeting m WHERE m.id = :id";
+        String jpql = "DELETE FROM Meeting m WHERE m.deleted = false and m.id = :id";
         int deletedCount = entityManager.createQuery(jpql)
                 .setParameter("id", id)
                 .executeUpdate();
@@ -98,7 +100,10 @@ public class MeetingRepository {
         Join<Team, User> usersJoin = teamsJoin.join("users");
 
         query.select(meetingRoot).distinct(true);
-        query.where(criteriaBuilder.equal(usersJoin.get("id"), id));
+        query.where(
+                criteriaBuilder.equal(meetingRoot.get("deleted"), false),
+                criteriaBuilder.equal(usersJoin.get("id"), id)
+                );
 
         return entityManager.createQuery(query).getResultList();
     }
@@ -108,7 +113,7 @@ public class MeetingRepository {
                 "FROM Meeting m " +
                 "JOIN m.project p " +
                 "JOIN p.pms ppm " +
-                "WHERE ppm.id = :userId";
+                "WHERE m.deleted = false and ppm.id = :userId";
         TypedQuery<Meeting> query = entityManager.createQuery(jpql, Meeting.class)
                 .setParameter("userId", id);
 
@@ -116,7 +121,7 @@ public class MeetingRepository {
     }
 
     public boolean deleteByProject(Long id) {
-        String jpql = "DELETE FROM Meeting m WHERE m.project.id = :id";
+        String jpql = "UPDATE Meeting m SET m.deleted = true WHERE m.project.id = :id";
         int deletedCount = entityManager.createQuery(jpql)
                 .setParameter("id", id)
                 .executeUpdate();

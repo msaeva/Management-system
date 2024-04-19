@@ -2,7 +2,7 @@ package com.example.management_system.service;
 
 import com.example.management_system.controller.errors.InvalidUserException;
 import com.example.management_system.controller.errors.ProjectNotFoundException;
-import com.example.management_system.domain.dto.*;
+import com.example.management_system.domain.dto.Pagination;
 import com.example.management_system.domain.dto.project.*;
 import com.example.management_system.domain.dto.task.DetailedTaskDTO;
 import com.example.management_system.domain.dto.task.SimpleTaskDTO;
@@ -149,13 +149,19 @@ public class ProjectService {
     public boolean deleteById(Long id) {
         Project project = findById(id);
 
-        boolean isDeletedTasks = taskService.deleteByProjectId(project.getId());
-        boolean isDeletedMeetings = meetingService.deleteByProjectId(project.getId());
-
-        if (isDeletedTasks && isDeletedMeetings) {
-            return projectRepository.delete(project.getId());
+        if (!project.getTasks().isEmpty()) {
+            taskService.deleteByProjectId(project.getId());
         }
-        return false;
+
+        meetingService.deleteByProjectId(project.getId());
+
+        try {
+            project.setDeleted(true);
+            projectRepository.save(project);
+            return true;
+        } catch (Exception e) {
+            throw new ProjectNotFoundException("Failed to mark comment with id " + id + " as deleted");
+        }
     }
 
     public boolean deleteTeamFromProject(Long teamId, Long projectId) {

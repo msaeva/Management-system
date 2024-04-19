@@ -15,6 +15,7 @@ import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 
 @Stateless
@@ -86,7 +87,13 @@ public class CommentService {
             throw new InvalidUserException("User with id:" + authUser.getId() + " is not owner of the comment with id: " + id);
         }
 
-        return commentRepository.removeById(id);
+        comment.setDeleted(true);
+        try {
+            commentRepository.save(comment);
+            return true;
+        } catch (Exception e) {
+            throw new CommentNotFoundException("Failed to mark comment with id " + id + " as deleted");
+        }
     }
 
     public CommentDTO update(long id, String newComment) {
@@ -119,5 +126,9 @@ public class CommentService {
 
     public boolean deleteCommentsByTaskId(Long id) {
         return commentRepository.deleteByTaskId(id);
+    }
+
+    public List<Comment> getCommentsByTaskId(Long id) {
+        return commentRepository.findByTaskId(id);
     }
 }

@@ -56,6 +56,10 @@ public class Project {
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
     private Set<Task> tasks;
 
+    @Column(name = "DELETED")
+    private boolean deleted;
+
+
     public Project(String title,
                    String description,
                    ProjectStatus status,

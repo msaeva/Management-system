@@ -49,4 +49,8 @@ public class Team {
     )
     private Set<Meeting> meetings = new HashSet<>();
 
+    @Column(name = "DELETED")
+    private boolean deleted;
+
+
 }

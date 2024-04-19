@@ -33,11 +33,19 @@ public class ProjectRepository {
     }
 
     public Optional<Project> findById(Long id) {
-        Project project = entityManager.find(Project.class, id);
-        if (project == null) {
+//        Project project = entityManager.find(Project.class, id);
+//        if (project == null) {
+//            return Optional.empty();
+//        }
+//        return Optional.of(project);
+
+        if (id == null) {
             return Optional.empty();
         }
-        return Optional.of(project);
+        String jpql = "SELECT p FROM Project p WHERE p.id = :id and p.deleted = false";
+        TypedQuery<Project> query = entityManager.createQuery(jpql, Project.class);
+        query.setParameter("id", id);
+        return Optional.ofNullable(query.getSingleResult());
     }
 
     public List<Project> getProjectsByUserId(Long id) {
@@ -50,19 +58,21 @@ public class ProjectRepository {
         Join<Team, User> usersJoin = teamJoin.join("users");
 
         criteriaQuery.select(projectRoot).distinct(true);
-        criteriaQuery.where(criteriaBuilder.equal(usersJoin.get("id"), id));
+        criteriaQuery.where(
+                criteriaBuilder.equal(projectRoot.get("deleted"), false),
+                criteriaBuilder.equal(usersJoin.get("id"), id));
 
         return entityManager.createQuery(criteriaQuery).getResultList();
     }
 
 
     public List<Project> findAll() {
-        return entityManager.createQuery("SELECT p FROM Project p", Project.class)
+        return entityManager.createQuery("SELECT p FROM Project p where p.deleted = false", Project.class)
                 .getResultList();
     }
 
     public boolean delete(Long id) {
-        String jpql = "DELETE FROM Project p WHERE p.id = :id";
+        String jpql = "DELETE FROM Project p WHERE p.deleted = false and p.id = :id";
         int deletedCount = entityManager.createQuery(jpql)
                 .setParameter("id", id)
                 .executeUpdate();
@@ -72,7 +82,7 @@ public class ProjectRepository {
     public List<Project> getPMProjectsByUserId(Long id) {
         String jpql = "select p from Project p " +
                 "join PMProject pm on pm.project.id = p.id " +
-                "where pm.user.id = :id";
+                "where p.deleted = false and pm.user.id = :id";
 
         TypedQuery<Project> query = entityManager.createQuery(jpql, Project.class);
         query.setParameter("id", id);

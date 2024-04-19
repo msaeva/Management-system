@@ -31,4 +31,8 @@ public class Comment {
 
     @Column(name = "CREATED_DATE")
     private LocalDateTime createdDate;
+
+    @Column(name = "DELETED")
+    private boolean deleted;
+
 }
