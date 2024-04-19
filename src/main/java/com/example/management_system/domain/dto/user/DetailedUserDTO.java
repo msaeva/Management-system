@@ -18,4 +18,13 @@ public class DetailedUserDTO {
     private String email;
     private String role;
     private List<DetailedProjectDTO> projects;
+
+    public DetailedUserDTO(Long id, String username, String firstName, String lastName, String email, String role) {
+        this.id = id;
+        this.username = username;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.role = role;
+    }
 }

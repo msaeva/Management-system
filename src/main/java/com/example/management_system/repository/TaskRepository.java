@@ -28,29 +28,27 @@ public class TaskRepository {
         return task;
     }
 
-    public List<Task> getTasksByUserAndProject(Long userId, long projectId) {
-        String jpql = "SELECT t FROM Task t WHERE t.project.id = :projectId AND t.user.id = :userId";
+    public Optional<Task> findById(Long id) {
+        if (id == null) {
+            return Optional.empty();
+        }
+        String jpql = "SELECT t FROM Task t WHERE t.id = :id and t.deleted = false";
         TypedQuery<Task> query = entityManager.createQuery(jpql, Task.class);
-        query.setParameter("projectId", projectId);
-        query.setParameter("userId", userId);
-        return query.getResultList();
-    }
-
-    public Optional<Task> findById(long id) {
-        Task task = entityManager.find(Task.class, id);
-        return Optional.ofNullable(task);
+        query.setParameter("id", id);
+        return Optional.ofNullable(query.getSingleResult());
     }
 
     public boolean deleteByProjectId(Long id) {
-        String jpql = "DELETE FROM Task t WHERE t.project.id = :id";
+        String jpql = "UPDATE Task t SET t.deleted = true WHERE t.project.id = :id";
+
         int deletedCount = entityManager.createQuery(jpql)
                 .setParameter("id", id)
                 .executeUpdate();
-        return deletedCount >= 0;
+        return deletedCount > 0;
     }
 
     public boolean deleteById(Long id) {
-        String jpql = "DELETE FROM Task t WHERE t.id = :id";
+        String jpql = "DELETE FROM Task t WHERE t.deleted = false and t.id = :id";
         int deletedCount = entityManager.createQuery(jpql)
                 .setParameter("id", id)
                 .executeUpdate();
@@ -58,8 +56,8 @@ public class TaskRepository {
     }
 
     public List<Task> getAllProjectTasks(Long projectId, int page, int size, String sort, String order) {
-        String queryString = "SELECT t FROM Task t WHERE t.project.id = :projectId ORDER BY t." + sort + " " + order;
-        Query query = entityManager.createQuery(queryString);
+        String jpql = "SELECT t FROM Task t WHERE t.deleted = false and t.project.id = :projectId ORDER BY t." + sort + " " + order;
+        Query query = entityManager.createQuery(jpql);
         query.setParameter("projectId", projectId);
         query.setFirstResult((page - 1) * size);
         query.setMaxResults(size);
@@ -67,14 +65,14 @@ public class TaskRepository {
     }
 
     public long getTaskCountByProjectId(Long projectId) {
-        String queryString = "SELECT COUNT(t) FROM Task t WHERE t.project.id = :projectId";
+        String queryString = "SELECT COUNT(t) FROM Task t WHERE t.deleted = false and t.project.id = :projectId";
         Query query = entityManager.createQuery(queryString);
         query.setParameter("projectId", projectId);
         return (Long) query.getSingleResult();
     }
 
     public List<Task> getAllByProject(long projectId) {
-        String jpql = "SELECT t FROM Task t WHERE t.project.id = :projectId";
+        String jpql = "SELECT t FROM Task t WHERE t.deleted = false and t.project.id = :projectId";
         TypedQuery<Task> query = entityManager.createQuery(jpql, Task.class);
         query.setParameter("projectId", projectId);
 

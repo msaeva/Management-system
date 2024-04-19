@@ -135,7 +135,13 @@ public class MeetingService {
     }
 
     public boolean delete(Long id) {
-        return this.meetingRepository.deleteById(id);
+        Meeting meeting = findById(id);
+        if (meeting != null) {
+            meeting.setDeleted(true);
+            meetingRepository.save(meeting);
+            return true;
+        }
+        return false;
     }
 
     public PublicMeetingDTO create(CreateMeetingValidation validation) {

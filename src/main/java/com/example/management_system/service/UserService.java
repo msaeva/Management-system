@@ -5,7 +5,6 @@ import com.example.management_system.controller.errors.UserNotFoundException;
 import com.example.management_system.domain.dto.Pagination;
 import com.example.management_system.domain.dto.project.DetailedProjectDTO;
 import com.example.management_system.domain.dto.user.*;
-import com.example.management_system.domain.entity.Project;
 import com.example.management_system.domain.entity.User;
 import com.example.management_system.domain.entity.UserRole;
 import com.example.management_system.repository.UserRepository;
@@ -71,14 +70,15 @@ public class UserService {
         return false;
     }
 
-    public void update(UpdateUserValidation validation) {
+    public DetailedUserDTO update(UpdateUserValidation validation) {
         User user = findById(validation.getId());
         UserRole role = userRoleService.findByName(validation.getRole());
 
         user.setFirstName(validation.getFirstName());
         user.setLastName(validation.getLastName());
         user.setRole(role);
-        userRepository.save(user);
+        User updated = userRepository.save(user);
+        return maptoDetailedUserDTO(updated);
     }
 
     public List<PrivateSimpleUserDTO> getByRoles(String roles) {
@@ -152,6 +152,15 @@ public class UserService {
                 user.getEmail(),
                 user.getRole().getRole().name(),
                 projects);
+    }
+
+    public DetailedUserDTO maptoDetailedUserDTO(User user) {
+        return new DetailedUserDTO(user.getId(),
+                user.getUsername(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getEmail(),
+                user.getRole().getRole().name());
     }
 
     public DetailedUserDTO getUserProfile() {

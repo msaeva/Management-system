@@ -21,6 +21,5 @@ public class TaskValidation {
     @NotNull
     private Long projectId;
 
-    @NotNull
     private Long userId;
 }

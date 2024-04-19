@@ -3,13 +3,12 @@ package com.example.management_system.service;
 import com.example.management_system.controller.errors.InvalidTaskException;
 import com.example.management_system.controller.errors.InvalidUserException;
 import com.example.management_system.controller.errors.TaskNotFoundException;
-import com.example.management_system.domain.dto.*;
+import com.example.management_system.domain.dto.PublicCommentDTO;
 import com.example.management_system.domain.dto.task.DetailedTaskDTO;
 import com.example.management_system.domain.dto.task.TaskDTO;
 import com.example.management_system.domain.dto.task.TaskValidation;
 import com.example.management_system.domain.dto.task.UpdateTaskValidation;
 import com.example.management_system.domain.entity.*;
-import com.example.management_system.domain.enums.Role;
 import com.example.management_system.domain.enums.TaskStatus;
 import com.example.management_system.repository.TaskRepository;
 import jakarta.ejb.Stateless;
@@ -18,7 +17,6 @@ import jakarta.inject.Inject;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -37,7 +35,6 @@ public class TaskService {
 
     @Inject
     public CommentService commentService;
-    private static final Logger LOGGER = Logger.getLogger(TaskService.class.getName());
 
     public TaskDTO create(TaskValidation validation) {
 
@@ -189,7 +186,7 @@ public class TaskService {
     public List<PublicCommentDTO> getTaskComments(Long taskId) {
         Task task = findById(taskId);
 
-        Set<Comment> comments = task.getComments();
+        List<Comment> comments = commentService.getCommentsByTaskId(task.getId());
         return comments
                 .stream().map(c -> commentService.toPublicCommentDTO(c)).collect(Collectors.toList());
     }
@@ -211,9 +208,17 @@ public class TaskService {
 
     public boolean deleteById(Long id) {
         Task task = findById(id);
-        if (commentService.deleteCommentsByTaskId(task.getId())) {
-            return taskRepository.deleteById(task.getId());
+
+        if (task != null) {
+            if (!task.getComments().isEmpty()) {
+                commentService.deleteCommentsByTaskId(task.getId());
+            }
+
+            task.setDeleted(true);
+            taskRepository.save(task);
+            return true;
         }
+
         return false;
     }
 

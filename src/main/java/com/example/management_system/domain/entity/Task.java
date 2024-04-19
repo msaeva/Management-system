@@ -56,13 +56,12 @@ public class Task {
     @OneToMany(mappedBy = "task", cascade = CascadeType.ALL,  orphanRemoval = true)
     private Set<Comment> comments;
 
-    public Task(String title,
-                String description,
-                String status,
-                LocalDateTime createdDate,
-                Project project,
-                String abbreviation,
-                String number) {
+    @Column(name = "DELETED")
+    private boolean deleted;
+
+    public Task(String title, String description,
+                String status, LocalDateTime createdDate,
+                Project project, String abbreviation, String number) {
         this.title = title;
         this.description = description;
         this.status = status;

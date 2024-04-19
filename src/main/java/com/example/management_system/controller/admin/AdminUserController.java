@@ -62,7 +62,7 @@ public class AdminUserController {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response update(UpdateUserValidation validation) {
-        userService.update(validation);
-        return Response.ok().build();
+        DetailedUserDTO updated = userService.update(validation);
+        return Response.ok(updated).build();
     }
 }

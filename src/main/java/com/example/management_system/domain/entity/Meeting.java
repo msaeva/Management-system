@@ -43,6 +43,10 @@ public class Meeting {
     )
     private Set<Team> teams = new HashSet<>();
 
+    @Column(name = "DELETED")
+    private boolean deleted;
+
+
     public Meeting(String title, LocalDateTime startDate, LocalDateTime endDate, Project project, Set<Team> teams) {
         this.title = title;
         this.startDate = startDate;
