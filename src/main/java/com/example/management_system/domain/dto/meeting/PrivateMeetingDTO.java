@@ -1,6 +1,6 @@
 package com.example.management_system.domain.dto.meeting;
 
-import com.example.management_system.domain.dto.user.PrivateSimpleUserDTO;
+import com.example.management_system.domain.dto.team.DetailedTeamDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,5 +15,5 @@ public class PrivateMeetingDTO {
     private String title;
     private Long start;
     private Long end;
-    private List<PrivateSimpleUserDTO> users;
+    private List<DetailedTeamDTO> teams;
 }

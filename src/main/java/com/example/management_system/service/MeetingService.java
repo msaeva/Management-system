@@ -6,7 +6,7 @@ import com.example.management_system.domain.dto.meeting.CreateMeetingValidation;
 import com.example.management_system.domain.dto.meeting.PrivateMeetingDTO;
 import com.example.management_system.domain.dto.meeting.PublicMeetingDTO;
 import com.example.management_system.domain.dto.meeting.UpdateMeetingValidation;
-import com.example.management_system.domain.dto.user.PrivateSimpleUserDTO;
+import com.example.management_system.domain.dto.team.DetailedTeamDTO;
 import com.example.management_system.domain.entity.Meeting;
 import com.example.management_system.domain.entity.Project;
 import com.example.management_system.domain.entity.Team;
@@ -37,7 +37,7 @@ public class MeetingService {
     @Inject
     private AuthService authService;
 
-    public List<PublicMeetingDTO> getAuthUserMeetings() {
+    public List<PrivateMeetingDTO> getAuthUserMeetings() {
         User authUser = authService.getAuthenticatedUser();
         if (authUser == null) {
             throw new InvalidUserException("User is not authenticated");
@@ -46,12 +46,12 @@ public class MeetingService {
             return meetingRepository
                     .getByUserId(authUser.getId())
                     .stream()
-                    .map(this::mapToPublicMeetingDTO)
+                    .map(this::mapToPrivateMeetingDTO)
                     .collect(Collectors.toList());
         }
 
         return meetingRepository.getPMMeetingsById(authUser.getId()).stream()
-                .map(this::mapToPublicMeetingDTO)
+                .map(this::mapToPrivateMeetingDTO)
                 .collect(Collectors.toList());
 
     }
@@ -94,18 +94,17 @@ public class MeetingService {
                 .collect(Collectors.toList());
     }
 
-    private PrivateMeetingDTO mapToPrivateMeetingDTO(Meeting meeting) {
-        List<PrivateSimpleUserDTO> users = meeting.getTeams()
+    public PrivateMeetingDTO mapToPrivateMeetingDTO(Meeting meeting) {
+        List<DetailedTeamDTO> teams = meeting
+                .getTeams()
                 .stream()
-                .flatMap(team -> team.getUsers().stream())
-                .map(u -> userService.mapToPrivateSimpleUserDTO(u))
-                .collect(Collectors.toList());
+                .map(t -> teamService.mapToDetailedTeamDTO(t)).collect(Collectors.toList());
 
         return new PrivateMeetingDTO(meeting.getId(),
                 meeting.getTitle(),
                 Timestamp.valueOf(meeting.getStartDate()).getTime(),
                 Timestamp.valueOf(meeting.getEndDate()).getTime(),
-                users
+                teams
         );
     }
 
@@ -144,7 +143,7 @@ public class MeetingService {
         return false;
     }
 
-    public PublicMeetingDTO create(CreateMeetingValidation validation) {
+    public PrivateMeetingDTO create(CreateMeetingValidation validation) {
         Project project = projectService.findById(validation.getProjectId());
 
         Set<Team> teams = teamService.findByIds(validation.getTeamIds());
@@ -158,7 +157,21 @@ public class MeetingService {
                 teams);
 
         Meeting saved = meetingRepository.save(meeting);
-        return mapToPublicMeetingDTO(saved);
+        return mapToPrivateMeetingDTO(saved);
+    }
+
+    public PrivateMeetingDTO removeTeamFromMeeting(Long teamId, Long meetingId) {
+        Team team = teamService.findById(teamId);
+        Meeting meeting = findById(meetingId);
+
+        Set<Team> updatedTeams = meeting.getTeams().stream()
+                .filter(t -> !t.getId().equals(team.getId()))
+                .collect(Collectors.toSet());
+
+        meeting.setTeams(updatedTeams);
+        meetingRepository.save(meeting);
+
+        return mapToPrivateMeetingDTO(meeting);
     }
 
     public boolean deleteByProjectId(Long id) {

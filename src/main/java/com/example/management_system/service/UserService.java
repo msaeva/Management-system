@@ -34,7 +34,7 @@ public class UserService {
     public SimpleUserDTO create(RegisterUserValidation validation) {
 
         Optional<User> byUsername = userRepository.findByUsername(validation.getUsername());
-        Optional<User> byEmail = userRepository.findByEmail(validation.getUsername());
+        Optional<User> byEmail = userRepository.findByEmail(validation.getEmail());
 
         if (byUsername.isPresent() || byEmail.isPresent()) {
             throw new InvalidUserException("User already exists!");

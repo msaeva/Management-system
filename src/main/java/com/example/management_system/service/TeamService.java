@@ -1,6 +1,5 @@
 package com.example.management_system.service;
 
-import com.example.management_system.controller.UserController;
 import com.example.management_system.controller.errors.TeamNotFoundException;
 import com.example.management_system.domain.dto.team.DetailedTeamDTO;
 import com.example.management_system.domain.dto.team.TeamValidation;
@@ -16,7 +15,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @Stateless
@@ -103,4 +101,17 @@ public class TeamService {
     public Set<Team> findByIds(List<Long> teamIds) {
         return new HashSet<>(teamRepository.findByIds(teamIds));
     }
+
+//    public boolean removeTeamFromMeeting(Long teamId, Long meetingId) {
+//        Team team = findById(teamId);
+//        Meeting meeting = meetingService.findById(meetingId);
+//
+//        Set<Team> updatedTeams = meeting.getTeams().stream()
+//                .filter(t -> !t.getId().equals(teamId))
+//                .collect(Collectors.toSet());
+//
+//        meeting.setTeams(updatedTeams);
+//
+//        return meetingService.mapToPrivateMeetingDTO(meeting);
+//    }
 }

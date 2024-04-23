@@ -2,7 +2,6 @@ package com.example.management_system.controller.admin;
 
 import com.example.management_system.domain.dto.meeting.CreateMeetingValidation;
 import com.example.management_system.domain.dto.meeting.PrivateMeetingDTO;
-import com.example.management_system.domain.dto.meeting.PublicMeetingDTO;
 import com.example.management_system.domain.dto.meeting.UpdateMeetingValidation;
 import com.example.management_system.service.MeetingService;
 import jakarta.annotation.security.RolesAllowed;
@@ -63,7 +62,17 @@ public class AdminMeetingController {
     @Produces(MediaType.APPLICATION_JSON)
     @RolesAllowed({"ADMIN"})
     public Response create(CreateMeetingValidation validation) {
-        PublicMeetingDTO meeting = meetingService.create(validation);
+        PrivateMeetingDTO meeting = meetingService.create(validation);
         return Response.ok(meeting).build();
+    }
+
+    @Produces(MediaType.APPLICATION_JSON)
+    @DELETE()
+    @Path("/{meetingId}/teams/{teamId}")
+    @RolesAllowed({"ADMIN"})
+    public Response removeTeamFromMeeting(@PathParam("teamId") Long teamId,
+                                          @PathParam("meetingId") Long meetingId) {
+        PrivateMeetingDTO updated = meetingService.removeTeamFromMeeting(teamId, meetingId);
+        return Response.ok(updated).build();
     }
 }
