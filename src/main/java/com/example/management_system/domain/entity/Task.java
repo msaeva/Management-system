@@ -39,6 +39,9 @@ public class Task {
     @Column(name = "ESTIMATION_TIME")
     private Integer estimationTime;
 
+    @Column(name = "COMPLETION_TIME")
+    private Integer completionTime;
+
     @Column(name = "PROGRESS")
     private Integer progress;
 

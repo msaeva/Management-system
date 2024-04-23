@@ -17,7 +17,6 @@ import jakarta.inject.Inject;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @Stateless
@@ -73,15 +72,21 @@ public class TaskService {
         }
 
         Project project = projectService.findById(projectId);
-        List<Team> teamsWithAuthUser = project.getTeams().stream()
-                .filter(team -> team.getUsers().stream().anyMatch(u -> u.getId().equals(authUser.getId())))
+        List<Team> teamsWithAuthUser = project.getTeams()
+                .stream()
+                .filter(t -> !t.isDeleted())
+                .filter(team -> team.getUsers()
+                        .stream()
+                        .anyMatch(u -> u.getId().equals(authUser.getId())))
                 .collect(Collectors.toList());
 
         List<Long> userIds = teamsWithAuthUser.stream()
                 .flatMap(t -> t.getUsers().stream())
+                .filter(u -> !u.isDeleted())
                 .map(User::getId).collect(Collectors.toList());
 
         List<Task> result = project.getTasks().stream()
+                .filter(t -> !t.isDeleted())
                 .filter(task -> {
                     User taskUser = task.getUser();
                     return taskUser == null || userIds.contains(taskUser.getId());
@@ -128,6 +133,7 @@ public class TaskService {
                 userFullName,
                 task.getAbbreviation(),
                 task.getEstimationTime(),
+                task.getCompletionTime(),
                 task.getCreatedDate(),
                 task.getProgress());
     }
@@ -251,5 +257,16 @@ public class TaskService {
         }
         Task saved = taskRepository.save(task);
         return mapToTaskDTO(saved);
+    }
+
+    public TaskDTO setCompletionTime(Long id, Integer completionTime) {
+        Task task = findById(id);
+        if (completionTime >= 1) {
+            task.setCompletionTime(completionTime);
+        } else {
+            throw new InvalidTaskException("Completion time is invalid!");
+        }
+        Task updated = taskRepository.save(task);
+        return mapToTaskDTO(updated);
     }
 }

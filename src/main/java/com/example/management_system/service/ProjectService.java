@@ -232,6 +232,7 @@ public class ProjectService {
         PrivateProjectDTO project = mapToPrivateProjectDTO(p);
         List<SimpleTaskDTO> tasks = p.getTasks()
                 .stream()
+                .filter(t -> !t.isDeleted())
                 .map(this::mapToPrivateTaskDTO)
                 .limit(5)
                 .collect(Collectors.toList());

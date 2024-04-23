@@ -19,6 +19,7 @@ public class TaskDTO {
     private String userFullName;
     private String abbreviation;
     private Integer estimationTime;
+    private Integer completionTime;
     private LocalDateTime createdDate;
     private Integer progress;
 }

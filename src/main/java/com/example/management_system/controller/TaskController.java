@@ -45,6 +45,15 @@ public class TaskController {
     }
 
     @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/completion-time")
+    @PUT
+    @RolesAllowed({"USER"})
+    public Response setCompletionTime(@PathParam("id") Long id, Integer estimationTime) {
+        TaskDTO taskDTO = taskService.setCompletionTime(id, estimationTime);
+        return Response.ok(taskDTO).build();
+    }
+
+    @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/progress")
     @PUT
     @RolesAllowed({"USER"})
