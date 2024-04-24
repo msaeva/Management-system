@@ -249,16 +249,6 @@ public class ProjectService {
         );
     }
 
-    private DetailedTaskDTO mapToDetailedTaskDTO(Task t) {
-        return new DetailedTaskDTO(
-                t.getId(),
-                t.getTitle(),
-                t.getDescription(),
-                t.getAbbreviation(),
-                t.getCreatedDate(),
-                t.getStatus());
-    }
-
     public Pagination<DetailedTaskDTO> getAllProjectTasks(Long projectId, int page, int size, String sort, String order) {
         List<DetailedTaskDTO> tasks = taskService.getAllProjectTasks(projectId, page, size, sort, order);
         long totalRecords = taskService.getTasksCountByProjectId(projectId);
@@ -268,15 +258,6 @@ public class ProjectService {
     public List<ProjectUserDTO> getAllProjectsWithUsers() {
         List<Project> all = this.projectRepository.findAll();
         return mapToProjectUserDTO(all);
-    }
-
-    public List<ProjectUserDTO> getAllPMProjectsWithUsers() {
-        User authUser = authService.getAuthenticatedUser();
-        if (authUser.getRole().getRole() != Role.PM) {
-            throw new InvalidUserException("Invalid user!");
-        }
-        List<Project> projects = projectRepository.getProjectsByUserId(authUser.getId());
-        return mapToProjectUserDTO(projects);
     }
 
     private static ArrayList<ProjectUserDTO> mapToProjectUserDTO(List<Project> projects) {
@@ -335,9 +316,17 @@ public class ProjectService {
 
     public List<PrivateSimpleUserDTO> getAllUsersInProject(long projectId) {
         Project project = findById(projectId);
-        List<User> users = project.getTeams().stream().flatMap(t -> t.getUsers().stream()).collect(Collectors.toList());
+        List<User> users = project.getTeams()
+                .stream()
+                .filter(t -> !t.isDeleted())
+                .flatMap(t -> t.getUsers().stream().filter(u -> !u.isDeleted()))
+                .distinct()
+                .collect(Collectors.toList());
 
-        return users.stream().map(u -> userService.mapToPrivateSimpleUserDTO(u)).collect(Collectors.toList());
+        return users
+                .stream()
+                .map(u -> userService.mapToPrivateSimpleUserDTO(u))
+                .collect(Collectors.toList());
     }
 
     public List<DetailedProjectDTO> getProjectsByUserId(Long id) {

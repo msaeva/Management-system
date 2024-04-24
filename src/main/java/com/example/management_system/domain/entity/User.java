@@ -50,6 +50,9 @@ public class User implements Serializable {
     )
     private Set<Team> teams = new HashSet<>();
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL,  orphanRemoval = true)
+    private Set<Task> tasks;
+
     public User(String username, String firstName, String lastName, String email, String password, UserRole role, boolean deleted) {
         this.username = username;
         this.firstName = firstName;

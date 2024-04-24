@@ -5,6 +5,8 @@ import com.example.management_system.controller.errors.UserNotFoundException;
 import com.example.management_system.domain.dto.Pagination;
 import com.example.management_system.domain.dto.project.DetailedProjectDTO;
 import com.example.management_system.domain.dto.user.*;
+import com.example.management_system.domain.entity.Task;
+import com.example.management_system.domain.entity.Team;
 import com.example.management_system.domain.entity.User;
 import com.example.management_system.domain.entity.UserRole;
 import com.example.management_system.repository.UserRepository;
@@ -29,6 +31,9 @@ public class UserService {
 
     @Inject
     private AuthService authService;
+
+    @Inject
+    private TaskService taskService;
 
     @Transactional
     public SimpleUserDTO create(RegisterUserValidation validation) {
@@ -63,6 +68,20 @@ public class UserService {
     public boolean deleteById(Long id) {
         User user = findById(id);
         if (user != null) {
+            for (Team team : user.getTeams()) {
+                team.getUsers().removeIf(u -> Objects.equals(u.getId(), user.getId()));
+            }
+
+            if (!user.getTasks().isEmpty()) {
+                List<Long> taskIds = user
+                        .getTasks()
+                        .stream()
+                        .map(Task::getId)
+                        .collect(Collectors.toList());
+
+                this.taskService.removeAssignedUserFromTasks(taskIds);
+            }
+
             user.setDeleted(true);
             userRepository.save(user);
             return true;

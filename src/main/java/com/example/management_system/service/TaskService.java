@@ -204,10 +204,13 @@ public class TaskService {
             User user = userService.findById(validation.getUserId());
             task.setUser(user);
         }
+
+        if (validation.getAbbreviation() != null){
+            task.setAbbreviation(validation.getAbbreviation());
+        }
         task.setStatus(TaskStatus.valueOf(validation.getStatus()).name());
         task.setDescription(validation.getDescription());
         task.setTitle(validation.getTitle());
-        task.setAbbreviation(validation.getAbbreviation());
         Task saved = taskRepository.save(task);
         return mapToTaskDTO(saved);
     }
@@ -268,5 +271,9 @@ public class TaskService {
         }
         Task updated = taskRepository.save(task);
         return mapToTaskDTO(updated);
+    }
+
+    public void removeAssignedUserFromTasks(List<Long> taskIds) {
+        this.taskRepository.removeAssignedUserFromTasks(taskIds);
     }
 }
