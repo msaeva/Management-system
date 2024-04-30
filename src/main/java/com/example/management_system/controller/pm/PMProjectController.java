@@ -1,14 +1,12 @@
 package com.example.management_system.controller.pm;
 
+import com.example.management_system.domain.dto.Pagination;
 import com.example.management_system.domain.dto.task.TaskDTO;
 import com.example.management_system.domain.dto.user.PrivateSimpleUserDTO;
 import com.example.management_system.service.ProjectService;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
@@ -49,8 +47,12 @@ public class PMProjectController {
     @Path("/{projectId}/users")
     @RolesAllowed({"PM"})
     @Produces("application/json")
-    public Response getAllUsersInProject(@PathParam("projectId") long projectId) {
-        List<PrivateSimpleUserDTO> tasks = projectService.getAllUsersInProject(projectId);
+    public Response getAllUsersInProject(@PathParam("projectId") long projectId,
+                                         @QueryParam("page") int page,
+                                         @QueryParam("size") int size,
+                                         @QueryParam("search") String search
+    ) {
+        Pagination<PrivateSimpleUserDTO> tasks = projectService.getAllUsersInProject(projectId, page, size, search);
         return Response.ok(tasks).build();
     }
 

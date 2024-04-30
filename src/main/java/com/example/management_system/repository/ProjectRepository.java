@@ -6,6 +6,7 @@ import com.example.management_system.domain.entity.User;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -33,12 +34,6 @@ public class ProjectRepository {
     }
 
     public Optional<Project> findById(Long id) {
-//        Project project = entityManager.find(Project.class, id);
-//        if (project == null) {
-//            return Optional.empty();
-//        }
-//        return Optional.of(project);
-
         if (id == null) {
             return Optional.empty();
         }
@@ -88,5 +83,14 @@ public class ProjectRepository {
         query.setParameter("id", id);
 
         return query.getResultList();
+    }
+
+    public Long findProjectByAbbreviation(String abbreviation) {
+        String jpql = "select count(p) from Project p where p.deleted = false and lower(p.abbreviation) = lower(:abbreviation)";
+
+        Query query = entityManager.createQuery(jpql);
+        query.setParameter("abbreviation", abbreviation.toLowerCase());
+
+        return (Long) query.getSingleResult();
     }
 }

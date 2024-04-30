@@ -314,24 +314,27 @@ public class ProjectService {
                 .collect(Collectors.toList());
     }
 
-    public List<PrivateSimpleUserDTO> getAllUsersInProject(long projectId) {
+    public Pagination<PrivateSimpleUserDTO> getAllUsersInProject(long projectId, int page,
+                                                                 int size, String search) {
         Project project = findById(projectId);
-        List<User> users = project.getTeams()
-                .stream()
-                .filter(t -> !t.isDeleted())
-                .flatMap(t -> t.getUsers().stream().filter(u -> !u.isDeleted()))
-                .distinct()
-                .collect(Collectors.toList());
 
-        return users
+        List<PrivateSimpleUserDTO> users = userService.getAllUsersByProject(project.getId(), page, size, search)
                 .stream()
                 .map(u -> userService.mapToPrivateSimpleUserDTO(u))
                 .collect(Collectors.toList());
+        long totalRecords = userService.getCountAllUsersByProject(project.getId(), search);
+
+        return new Pagination<>(users, totalRecords);
     }
 
     public List<DetailedProjectDTO> getProjectsByUserId(Long id) {
         return projectRepository.getProjectsByUserId(id)
                 .stream()
                 .map(this::mapToDetailedProjectDTO).collect(Collectors.toList());
+    }
+
+    public boolean checkIfAbbreviationExists(String abbreviation) {
+        Long count = this.projectRepository.findProjectByAbbreviation(abbreviation);
+        return count > 0;
     }
 }

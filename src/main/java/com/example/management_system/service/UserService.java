@@ -221,4 +221,12 @@ public class UserService {
         User saved = userRepository.save(authUser);
         return maptoDetailedUserDTO(saved, null);
     }
+
+    public List<User> getAllUsersByProject(long projectId, int page, int size, String search) {
+      return   userRepository.getAllUsersByProject(projectId, page, size, search);
+    }
+
+    public long getCountAllUsersByProject(Long id, String search) {
+       return userRepository.getCountAllUsersByProject(id, search);
+    }
 }

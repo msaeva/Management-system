@@ -44,12 +44,4 @@ public class PMTaskController {
         return Response.status(Response.Status.BAD_REQUEST).build();
     }
 
-    @Produces(MediaType.APPLICATION_JSON)
-    @Path("/{id}/users/{userId}")
-    @PUT
-    @RolesAllowed({"PM"})
-    public Response assignUser(@PathParam("id") long id, @PathParam("userId") long userId) {
-        TaskDTO taskDTO = taskService.assignUserToTask(id, userId);
-        return Response.ok(taskDTO).build();
-    }
 }

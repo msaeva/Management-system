@@ -170,21 +170,6 @@ public class TaskService {
                 .orElseThrow(() -> new TaskNotFoundException("Task with id: " + id + " not found!"));
     }
 
-    public TaskDTO assignUserToTask(long id, long userId) {
-        User user = userService.findById(userId);
-        Task task = findById(id);
-
-        if (task.getUser() != null) {
-            throw new InvalidTaskException("Task with id: " + id + " already has assigned user");
-        }
-
-        task.setUser(user);
-        task.setStatus(TaskStatus.TODO.name());
-        Task updatedTask = taskRepository.save(task);
-
-        return mapToTaskDTO(updatedTask);
-    }
-
     public boolean deleteByProjectId(Long id) {
         return taskRepository.deleteByProjectId(id);
     }
@@ -204,13 +189,21 @@ public class TaskService {
             User user = userService.findById(validation.getUserId());
             task.setUser(user);
         }
-
-        if (validation.getAbbreviation() != null){
-            task.setAbbreviation(validation.getAbbreviation());
+        if (validation.getEstimationTime() < 0) {
+            throw new InvalidTaskException("Invalid estimation time");
         }
+        if (validation.getCompletionTime() < 0) {
+            throw new InvalidTaskException("Invalid completion time");
+        }
+        if (validation.getProgress() != null && validation.getProgress() > 0) {
+            task.setProgress(validation.getProgress());
+        }
+
         task.setStatus(TaskStatus.valueOf(validation.getStatus()).name());
         task.setDescription(validation.getDescription());
         task.setTitle(validation.getTitle());
+        task.setCompletionTime(validation.getCompletionTime());
+        task.setEstimationTime(validation.getEstimationTime());
         Task saved = taskRepository.save(task);
         return mapToTaskDTO(saved);
     }
@@ -240,37 +233,6 @@ public class TaskService {
 
     public long getTasksCountByProjectId(Long projectId) {
         return taskRepository.getTaskCountByProjectId(projectId);
-    }
-
-    public TaskDTO setEstimationTime(Long id, Integer estimationTime) {
-        Task task = findById(id);
-        if (estimationTime >= 1) {
-            task.setEstimationTime(estimationTime);
-        } else {
-            throw new InvalidTaskException("Estimation time is invalid!");
-        }
-        Task updated = taskRepository.save(task);
-        return mapToTaskDTO(updated);
-    }
-
-    public TaskDTO changeProgress(Long id, Integer progress) {
-        Task task = findById(id);
-        if (progress >= 0 && progress <= 100) {
-            task.setProgress(progress);
-        }
-        Task saved = taskRepository.save(task);
-        return mapToTaskDTO(saved);
-    }
-
-    public TaskDTO setCompletionTime(Long id, Integer completionTime) {
-        Task task = findById(id);
-        if (completionTime >= 1) {
-            task.setCompletionTime(completionTime);
-        } else {
-            throw new InvalidTaskException("Completion time is invalid!");
-        }
-        Task updated = taskRepository.save(task);
-        return mapToTaskDTO(updated);
     }
 
     public void removeAssignedUserFromTasks(List<Long> taskIds) {
