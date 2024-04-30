@@ -6,11 +6,9 @@ import jakarta.persistence.*;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.logging.Logger;
 
 @Stateless
 public class UserRepository {
-    private static final Logger LOGGER = Logger.getLogger(UserRepository.class.getName());
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -72,12 +70,6 @@ public class UserRepository {
             return Optional.empty();
         }
     }
-
-    public List<User> findAll() {
-        return entityManager.createQuery("SELECT u FROM User u where u.deleted = false", User.class)
-                .getResultList();
-    }
-
     public List<User> findAll(int page, int size, String sort, String order) {
         String jpql;
 
@@ -96,14 +88,6 @@ public class UserRepository {
         return query.getResultList();
     }
 
-    public boolean deleteById(Long id) {
-        String jpql = "DELETE FROM User u WHERE u.id = :id";
-        int deletedCount = entityManager.createQuery(jpql)
-                .setParameter("id", id)
-                .executeUpdate();
-        return deletedCount > 0;
-    }
-
     public List<User> findAllByRoleIds(List<Long> roleIds) {
         String jpql = "SELECT u FROM User u WHERE u.role.id  IN :ids and u.deleted = false";
         TypedQuery<User> query = entityManager.createQuery(jpql, User.class);
@@ -118,4 +102,54 @@ public class UserRepository {
         return (Long) query.getSingleResult();
     }
 
+    public List<User> getAllUsersByProject(long projectId, int page, int size, String search) {
+        String jpql = "SELECT DISTINCT u " +
+                "FROM Project p " +
+                "JOIN p.teams t " +
+                "JOIN t.users u " +
+                "WHERE p.id = :projectId " +
+                "AND p.deleted = false " +
+                "AND t.deleted = false " +
+                "AND u.deleted = false ";
+
+        if (search != null && !search.isEmpty()) {
+            jpql += "AND (LOWER(u.firstName) LIKE LOWER(:search) OR LOWER(u.lastName) LIKE LOWER(:search)) ";
+        }
+
+        Query query = entityManager.createQuery(jpql, User.class)
+                .setParameter("projectId", projectId);
+
+        if (search != null && !search.isEmpty()) {
+            query.setParameter("search", "%" + search.toLowerCase() + "%");
+        }
+
+        query.setFirstResult((page - 1) * size);
+        query.setMaxResults(size);
+
+        return query.getResultList();
+    }
+
+    public Long getCountAllUsersByProject(Long id, String search) {
+        String jpql = "SELECT count(distinct u.id) " +
+                "FROM Project p " +
+                "JOIN p.teams t " +
+                "JOIN t.users u " +
+                "WHERE p.id = :projectId " +
+                "AND p.deleted = false " +
+                "AND t.deleted = false " +
+                "AND u.deleted = false ";
+
+        if (search != null && !search.isEmpty()) {
+            jpql += "AND (LOWER(u.firstName) LIKE LOWER(:search) OR LOWER(u.lastName) LIKE LOWER(:search)) ";
+        }
+
+        Query query = entityManager.createQuery(jpql, User.class)
+                .setParameter("projectId", id);
+
+        if (search != null && !search.isEmpty()) {
+            query.setParameter("search", "%" + search.toLowerCase() + "%");
+        }
+
+        return (Long) query.getSingleResult();
+    }
 }

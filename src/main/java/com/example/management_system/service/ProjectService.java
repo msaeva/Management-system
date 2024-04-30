@@ -249,16 +249,6 @@ public class ProjectService {
         );
     }
 
-    private DetailedTaskDTO mapToDetailedTaskDTO(Task t) {
-        return new DetailedTaskDTO(
-                t.getId(),
-                t.getTitle(),
-                t.getDescription(),
-                t.getAbbreviation(),
-                t.getCreatedDate(),
-                t.getStatus());
-    }
-
     public Pagination<DetailedTaskDTO> getAllProjectTasks(Long projectId, int page, int size, String sort, String order) {
         List<DetailedTaskDTO> tasks = taskService.getAllProjectTasks(projectId, page, size, sort, order);
         long totalRecords = taskService.getTasksCountByProjectId(projectId);
@@ -268,15 +258,6 @@ public class ProjectService {
     public List<ProjectUserDTO> getAllProjectsWithUsers() {
         List<Project> all = this.projectRepository.findAll();
         return mapToProjectUserDTO(all);
-    }
-
-    public List<ProjectUserDTO> getAllPMProjectsWithUsers() {
-        User authUser = authService.getAuthenticatedUser();
-        if (authUser.getRole().getRole() != Role.PM) {
-            throw new InvalidUserException("Invalid user!");
-        }
-        List<Project> projects = projectRepository.getProjectsByUserId(authUser.getId());
-        return mapToProjectUserDTO(projects);
     }
 
     private static ArrayList<ProjectUserDTO> mapToProjectUserDTO(List<Project> projects) {
@@ -333,16 +314,27 @@ public class ProjectService {
                 .collect(Collectors.toList());
     }
 
-    public List<PrivateSimpleUserDTO> getAllUsersInProject(long projectId) {
+    public Pagination<PrivateSimpleUserDTO> getAllUsersInProject(long projectId, int page,
+                                                                 int size, String search) {
         Project project = findById(projectId);
-        List<User> users = project.getTeams().stream().flatMap(t -> t.getUsers().stream()).collect(Collectors.toList());
 
-        return users.stream().map(u -> userService.mapToPrivateSimpleUserDTO(u)).collect(Collectors.toList());
+        List<PrivateSimpleUserDTO> users = userService.getAllUsersByProject(project.getId(), page, size, search)
+                .stream()
+                .map(u -> userService.mapToPrivateSimpleUserDTO(u))
+                .collect(Collectors.toList());
+        long totalRecords = userService.getCountAllUsersByProject(project.getId(), search);
+
+        return new Pagination<>(users, totalRecords);
     }
 
     public List<DetailedProjectDTO> getProjectsByUserId(Long id) {
         return projectRepository.getProjectsByUserId(id)
                 .stream()
                 .map(this::mapToDetailedProjectDTO).collect(Collectors.toList());
+    }
+
+    public boolean checkIfAbbreviationExists(String abbreviation) {
+        Long count = this.projectRepository.findProjectByAbbreviation(abbreviation);
+        return count > 0;
     }
 }

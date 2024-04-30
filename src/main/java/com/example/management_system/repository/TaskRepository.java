@@ -78,4 +78,14 @@ public class TaskRepository {
 
         return query.getResultList();
     }
+
+    public boolean removeAssignedUserFromTasks(List<Long> taskIds) {
+        String jpql = "UPDATE Task t SET t.user = null WHERE t.id IN :taskIds";
+
+        int updatedCount = entityManager.createQuery(jpql)
+                .setParameter("taskIds", taskIds)
+                .executeUpdate();
+
+        return updatedCount > 0;
+    }
 }

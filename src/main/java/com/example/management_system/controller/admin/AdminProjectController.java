@@ -1,15 +1,17 @@
 package com.example.management_system.controller.admin;
 
-import com.example.management_system.domain.dto.task.DetailedTaskDTO;
 import com.example.management_system.domain.dto.Pagination;
 import com.example.management_system.domain.dto.project.PrivateProjectDTO;
 import com.example.management_system.domain.dto.project.ProjectValidation;
 import com.example.management_system.domain.dto.project.UpdateProjectValidation;
+import com.example.management_system.domain.dto.task.DetailedTaskDTO;
 import com.example.management_system.domain.dto.user.PrivateSimpleUserDTO;
 import com.example.management_system.domain.dto.user.SimpleUserDTO;
 import com.example.management_system.service.ProjectService;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -143,4 +145,14 @@ public class AdminProjectController {
         return Response.ok(projectService.getAllProjectsWithTeams()).build();
     }
 
+    @RolesAllowed("ADMIN")
+    @GET()
+    @Path("/exists")
+    public Response checkAbbreviation(@QueryParam("abbreviation") String abbreviation) {
+        boolean exists = projectService.checkIfAbbreviationExists(abbreviation);
+        JsonObject json = Json.createObjectBuilder()
+                .add("exists", exists)
+                .build();
+        return Response.ok().entity(json).build();
+    }
 }

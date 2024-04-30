@@ -6,15 +6,16 @@ import com.example.management_system.domain.dto.user.UpdateUserValidation;
 import com.example.management_system.service.UserService;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.*;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-import java.util.logging.Logger;
 
 @Path("/users")
 public class UserController {
-    private static final Logger LOGGER = Logger.getLogger(UserController.class.getName());
 
     @Inject
     private UserService userService;
